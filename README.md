@@ -11,8 +11,9 @@ To learn more about it, read the manuscript at XXX.
 
 The analysis workflow is composed of several analysis steps. All the analysis and external tools are orchestrated by R scripts.
 
+![Tubemap](https://github.com/Ste40/SteBora/assets/105483384/574e718c-20ad-402f-8a1a-2f4a5c30f5e5)
 
-![Alt text](/images/Tubemap.png "XXXX")
+
 
 
 
