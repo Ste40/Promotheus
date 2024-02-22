@@ -1,17 +1,24 @@
 # SteBora: a bioinformatic pipeline for the analysis of bacteria transcriptomics data deposited on NCBI databases
 
 ### Description
-SteBora is a bioinformatic pipeline for the analysis of bacterial RNA-Seq and Microarray data deposited on Sequence Read Archive (SRA) and Gene Expression Omnibus (GEO) datasets.
-The pipeline implements an automated workflow for differential gene expression analysis of transcriptomics datasets of a given bacteria strain.
+XXXX is a bioinformatic pipeline for the analysis of bacterial RNA-Seq and Microarray data stored on Sequence Read Archive (SRA) and Gene Expression Omnibus (GEO) datasets.
+The pipeline implements an automated workflow for differential gene expression analysis of transcriptomics datasets for a given bacteria strain.
 
 This project was designed to support promoter selection for synthetic circuits engineering.
 To learn more about it, read the manuscript at XXX.
 
-### Pipeline overview
+### Pipeline Overview
 
-QUI CI VA LA MAPPA
+The analysis workflow is composed of several analysis steps. All the analysis and external tools are orchestrated by R scripts.
+
+
+
+
+
+
 
 ## Installation and usage
+
 
 
 Una volta installato docker sul proprio PC, e' necessario fare un pull dell'immagine, ad esempio:
