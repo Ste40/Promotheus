@@ -12,7 +12,7 @@ To learn more about it, read the manuscript at XXX.
 The analysis workflow is composed of several analysis steps. All the analysis and external tools are orchestrated by R scripts.
 
 
-
+![Alt text](/images/Tubemap.png "XXXX")
 
 
 
