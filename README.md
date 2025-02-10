@@ -1,66 +1,72 @@
-# SteBora: a bioinformatic pipeline for the analysis of bacteria transcriptomics data deposited on NCBI databases
+# Promotheus: a bioinformatic pipeline for the analysis of bacterial transcriptomic data deposited on NCBI databases
 
 ### Description
-XXXX is a bioinformatic pipeline for the analysis of bacterial RNA-Seq and Microarray data stored on Sequence Read Archive (SRA) and Gene Expression Omnibus (GEO) datasets.
-The pipeline implements an automated workflow for differential gene expression analysis of transcriptomics datasets for a given bacteria strain.
+Promotheus is a data-driven pipeline designed to retrieve, process, and integrate publicly available transcriptomic data from bacterial species and their strains. Its main goal is to support the selection of promoters that exhibit either stable (constitutive) or variable (inducible) expression profiles, facilitating biosensor design in synthetic biology applications.
+Promotheus performs data retrieval from public repositories, raw data pre-processing, normalization, and batch effect correction. Gene IDs harmonization is performed through orthogroup identification, allowing a multi-strain and/or multi-species comparisons.
 
-This project was designed to support promoter selection for synthetic circuits engineering.
 To learn more about it, read the manuscript at XXX.
 
 ### Pipeline Overview
 
-The analysis workflow is composed of several analysis steps. All the analysis and external tools are orchestrated by R scripts.
-
-![Tubemap](https://github.com/Ste40/SteBora/assets/105483384/574e718c-20ad-402f-8a1a-2f4a5c30f5e5)
+![Tubemap_updated (2)](https://github.com/user-attachments/assets/5db7ef1b-80d8-44d8-9aa4-53ccadbff13f)
 
 
+---
+
+## Installation and Usage
+
+Promotheus is deployed via Docker. If you do not already have Docker installed, follow the instructions for docker installation at https://docs.docker.com/
+
+### Pulling the Docker Image
+
+Once Docker is installed, you can pull the Promotheus image from Docker Hub by running:
+
+```bash
+docker pull ste40/promotheus
+```
+## Parameters
 
 
+| Environment Variable | Default | Description                                                                                                 | Value | **Required?**             |
+|----------------------|---------|-------------------------------------------------------------------------------------------------------------|------------|----------------------------|
+| `THREADS`           | 8       | Number of threads for parallel processing.                                                                  | Numeric    | No                         |
+| `MEMORY`            | 4000    | Maximum memory allocation (MB) for Rockhopper execution.                                            | Numeric    | No                         |
+| `CORRECTION_DE`     | none    | Correction method for multiple testing. See [p.adjust in R documentation](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust) for available options. | Character | No                         |
+| `PVALUE`            | 0.05    | Significance threshold for identifying differentially expressed genes.                                      | Numeric    | No                         |
+| `OPERONS_DETECTION` | FALSE   | Enable or disable operons detection.                                                                        | Logical    | No                         |
+| `AMINO_DIFF`        | 3       | Defines the orthology matching in terms of protein length differences (amino acids) during orthogoup identification.                                       | Numeric    | No                         |
+| `SIMILARITY`        | 30      | minimum percentage of amino acid sequence similarity required to group genes into the same orthogroup for ID harmonization                                                          | Numeric    | No                         |
+| `ASMcode`           | *NULL* | The Assembly accession code.                                                                 | Character | **Yes** (required)         |
+| `OPERONS_FILE`      | *NULL* | Path to the operons file; **only required if** `OPERONS_DETECTION` is set to `FALSE`.                       | Character | **Yes** if `OPERONS_DETECTION=FALSE` |
 
+### Important Requirements
 
-## Installation and usage
+- `ASMcode` **must** be specified. If not provided, the script will terminate.
+- If `OPERONS_DETECTION` is set to `FALSE`, you **must** provide an `OPERONS_FILE`; otherwise, the script will terminate.
 
+---
 
+## Usage
 
-Una volta installato docker sul proprio PC, e' necessario fare un pull dell'immagine, ad esempio:
+The pipeline runs within a Docker container. You can set environment variables using the `-e` flag. Make sure to mount your input/output directories with the `-v` flag.
 
-'docker pull ste40/stebora_150124_debugging' oppure 'docker pull ste40/stebora_150124' 
+### Docker Run Example
 
-Una volta fatto il pull della pipeline, e' possibile eseguirla:
+Below is an example command to run the PROMotheus Pipeline. Adjust the paths and parameters as needed:
 
-'docker run -it -v /path/locale/tabelle:/input -v /path/locale/output:/output ste40/stebora_150124_debugging /bin/bash' 
-
-**NOTA**: per navigare all'interno dell'immagine da terminale, va specificato '/bin/bash'. Questo non e' necessario per eseguire l'immagine ste40/stebora_150124: 
-
-'docker run -it -v /path/locale/tabelle:/input -v /path/locale/output:/output ste40/stebora_150124' 
-
-## Parametri 
-
-La pipeline accetta diversi paramtri in input, i requisiti minimi sono i due volumi (-v), ovvero i path alle risorse locali sul tuo pc:
-
-- -v /path/locale/tabelle:/input : **/path/locale/tabelle** e' il path sul tuo PC dove sono presenti le due tabelle .xlsx relative ai GSE microarray e RNA_Seq, con i nomi Experimental_Groups_MA.xlsx e Experimental_Groups_RNA_Seq.xlsx. mentre **/input** e' la cartella input presente nell'ambiente dell'immagine, di fatto con -v si monta un volume.
-- -v /path/locale/output:/output : In questo caso si monta una cartella locale di output che e' dove saranno salvati tutti i file prodotti dalla pipeline.
-
-docker acetta anche questi parametri in input:
-
-- \`THREADS\`: Set the number of threads for parallel processing (default: 8, numeric).
-- \`MEMORY\`: Set the maximum memory allocation for rockhopper execution (default: 4000, numeric).
-- \`CORRECTION_DE\`: Specify the correction method for multiple testing. To see the availabe options, see p.adjust {stats} R documentation (default: none, character).
-- \`PVALUE\`: Set the significance threshold for differentially expressed genes identification (default: 0.05, numeric). 
-- \`OPERONS_DETECTION\`: Enable operons detection (default: FALSE, logical). 
-
-La pipeline usera' i valori di default se non specificati. Possono essere specificati con '-e':
-
-docker run -it -e THREADS=4 -e MEMORY=4000 -e CORRECTION_DE=BH -e PVALUE=0.01 -e OPERONS_DETECTION=TRUE -v /path/to/input:/input -v /path/to/output:/output ste40/stebora_150124_debugging /bin/bash
-
-**NOTA**: CORRECTION_DE e PVALUE definiscono i rispettivi valori utilizzati dal KW per l'identificatione dei DE, non ho modificato altri pvalues o eventuali correzioni in altri punti della pipeline per l'analisi microarray.
-THREADS setta i threads dove possibile, ad esempio orthofinder, allineamento ecc. Se ci sono funzioni specifiche nel quale sono settabili nella tua pipeline, possono essere aggiunti.
-
-## Modificare gli script
-
-Per modificare gli script, puoi montare direttamente alla cartella script, gli script in locale, ad esempio: 
-
-'docker run -it -v /path/locale/tabelle:/input -v /path/locale/output:/output -v /path/locale/scripts:/scripts ste40/stebora_150124_debugging /bin/bash'
-
-In questo modo, puoi modificare gli script in locale e lanciare la pipeline con gli script aggiornati. Nel momento in cui hai fatto le modifiche del caso puoi anche creare una nuova immagine, ti ho messo tra i collaboratori della repository. Basta anche solo che mi passi gli script e posso crearla io.  
+```bash
+docker run -it \
+  -e THREADS=4 \
+  -e MEMORY=4000 \
+  -e CORRECTION_DE=BH \
+  -e PVALUE=0.01 \
+  -e OPERONS_DETECTION=TRUE \
+  -e AMINO_DIFF=5 \
+  -e SIMILARITY=30 \
+  -e ASMcode=ASM317683v1 \
+  -e OPERONS_FILE=/path/to/operons_file \
+  -v /path/to/input:/input \
+  -v /path/to/output:/output \
+  ste40/promotheus
+```
 
