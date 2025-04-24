@@ -8,7 +8,7 @@ To learn more about it, read the manuscript at XXX.
 
 ### Pipeline Overview
 
-![Tubemap_updated (2)](https://github.com/user-attachments/assets/5db7ef1b-80d8-44d8-9aa4-53ccadbff13f)
+<img width="1066" alt="Tubemap_updated_github" src="https://github.com/user-attachments/assets/42159e26-9320-475d-b7b6-ec4db3d7f6ce" />
 
 
 ---
