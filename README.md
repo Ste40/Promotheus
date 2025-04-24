@@ -13,7 +13,7 @@ To learn more about it, read the manuscript at XXX.
 
 ---
 
-## Installation and Usage
+## Installation
 
 Promotheus is deployed via Docker. If you do not already have Docker installed, follow the instructions for docker installation at https://docs.docker.com/
 
