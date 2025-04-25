@@ -54,7 +54,7 @@ The pipeline needs two separate input tables for RNA-Seq and Microarray datasets
 - **taxon**: Microorganism names, based on NCBI taxonomy name.
 - **reference_genome**: Assembly accession codes for the reference genome used for reads alignment and gene counts quantification.
 
-The examples of these two tables (RNA-Seq and Microarray) are provided in this repository, see GEO_Datasets_Search_RNA_Seq_Lactococcus_lactis_2025-01-15.xlsx and GEO_Datasets_Search_Microarrays_Lactococcus_lactis_2025-01-15.xlsx.
+The examples of these two tables (RNA-Seq and Microarray) are provided in this repository, see Examples directory.
 
 NOTE: It is reccomended to use our GEO_Search.R script to generate these two tables.
 See below for more information.
