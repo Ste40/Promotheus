@@ -1,2 +1,0 @@
-study_alias	study_accession
-GSE116952	SRP153084
