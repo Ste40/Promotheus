@@ -94,6 +94,8 @@ NOTE: The script attempts to retrieve data from NCBI, so it may fail if the serv
 
 The pipeline runs within a Docker container. You can set environment variables using the `-e` flag. Make sure to mount your input/output directories with the `-v` flag.
 
+WARNING: the scripts provided in this repository can't be executed without the appropriate environment and softwares/packages, which are included in Docker's image.
+
 ### Docker Run Example
 
 Below is an example command to run the Promotheus pipeline. Adjust the paths and parameters as needed:
@@ -109,8 +111,8 @@ Below is an example command to run the Promotheus pipeline. Adjust the paths and
   -e SIMILARITY=30 \
   -e ASMcode=ASM317683v1 \
   -e OPERONS_THRESHOLD=3 \
-  -v /mnt/f/Umberto/BMS_Docker/input/:/input \
-  -v /mnt/f/Umberto/BMS_Docker/output/:/output \
+  -v /path/to/input/:/input \
+  -v /path/to/output/:/output \
   ste40/promotheus
 ```
 ## Output file
@@ -119,14 +121,14 @@ The output table contains includes gene expression values, percentiles, coeffici
 
 ### Columns Description
 - **Gene_name**: The name of the gene.
-- **GeneID**: The unique identifier for the gene.
-- **Espressione_GSEXXXXX**: Gene expression values for each GSE.
+- **GeneID**: The unique identifier for the gene, according to the gene nomenclature of the user-provided ASMcode.
+- **Expression_GSEXXXXX**: Gene expression values for each GSE.
+- **Mean_Expression**: The average expression value of the gene across all samples in the datasets.
+- **CV**: Coefficient of variation, indicating the variability of the gene expression across samples, computed as the standard deviation of log-transformed expression values. A higher CV suggests more variation in gene expression.
 - **Percentile_GSEXXXXX**: Percentile values for the gene expression in different datasets.
-- **Espressione_media**: The average expression value of the gene across all samples in the datasets.
-- **CV**: Coefficient of variation, indicating the variability of the gene expression across samples. A higher CV suggests more variation in gene expression.
-- **Percentile_medio**: The average percentile value across all datasets for the gene.
+- **Mean_Percentile**: The average percentile value across all datasets for the gene.
 - **Percentile_SD**: Standard deviation of the percentile values across all datasets for the gene.
-- **DE**: Differential expression status (YES|NO)
-- **sequence**: Contains the upstream gene nucleotide sequence.
+- **DE**: Differential expression status (YES|NO), in at least one GSE.
+- **Sequence**: Contains the DNA sequence upstream of the gene.
 
 An example of output table is provided in this repository (Output.xlsx)
