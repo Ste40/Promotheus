@@ -4,7 +4,7 @@
 Promotheus is a data-driven pipeline designed to retrieve, process, and integrate publicly available transcriptomic data from bacterial species and their strains. Its main goal is to support the selection of promoters that exhibit either stable (constitutive) or variable (inducible) expression profiles, facilitating biosensor design in synthetic biology applications.
 Promotheus performs data retrieval from public repositories, raw data pre-processing, normalization, and batch effect correction. Gene IDs harmonization is performed through orthogroup identification, allowing a multi-strain and/or multi-species comparisons.
 
-This project was carried out with the contribution of Stefano Quaranta, Debora Dallera, and Lorenzo Pasotti.
+This project was carried out with the contribution of Stefano Quaranta, Debora Dallera and Lorenzo Pasotti.
 
 ### Pipeline Overview
 
