@@ -132,3 +132,88 @@ The output table contains includes gene expression values, percentiles, coeffici
 - **Sequence**: Contains the DNA sequence upstream of the gene.
 
 An example of output table is provided in this repository (Output.xlsx)
+
+---
+
+## Internal execution flow (code-level)
+
+Promotheus has a single entrypoint (`Scripts/Introduction.sh`) that validates environment variables and starts `Scripts/Microarray/main_pipeline.R`. The R main script orchestrates the full workflow as follows:
+
+1. **Parameter parsing/validation** from environment variables (`THREADS`, `MEMORY`, `CORRECTION_DE`, `PVALUE`, `OPERONS_DETECTION`, `OPERONS_THRESHOLD`, `AMINO_DIFF`, `SIMILARITY`, `MULTITAXA`, `ASMcode`).
+2. **Directory setup** under `/output`:
+   - `/output/tmp/microarray`
+   - `/output/tmp/orthologous_genome`
+   - `/output/results/fulltab`
+   - `/output/RNA_Seq/results`
+3. **Orthology step** (if `/output/orthologous_genes.txt` does not exist):
+   - `Scripts/Microarray/ortologhi_new.R`
+   - `Scripts/Microarray/dowload_file_assembly.R`
+4. **Microarray branch** (if input contains files matching `Microarray`):
+   - `Scripts/Microarray/pipeline_MA_bash.R`
+   - metadata retrieval + per-experiment analyses (`intra_experiment_analysis.R`, one/two-channel functions, affymetrix).
+5. **RNA-Seq branch** (if input contains files matching `RNA_Seq`):
+   - `Scripts/RNA-Seq/Pipeline_bash_RNA_Seq.R`
+   - metadata retrieval, download/alignment (`Data_retrieval.R`, `BAM_parsing.R`), optional operon detection, NDE detection, merge.
+6. **Cross-experiment integration**:
+   - `Scripts/Microarray/interexp_analysis.R`
+   - intersects orthology-mapped genes across Microarray and RNA-Seq full tables, applies normalization/batch correction, computes summary metrics, writes final outputs.
+
+### Data flow between folders
+
+- **Input**: `/input/*Microarray*` and/or `/input/*RNA_Seq*` (xlsx tables).
+- **Intermediate**:
+  - `/output/tmp/microarray/*_full_tab.txt` (microarray per-GSE tables)
+  - `/output/RNA_Seq/results/*full_tab.txt` (RNA-Seq per-GSE tables)
+  - `/output/orthologous_genes.txt` (cross-genome gene mapping)
+- **Final**:
+  - `/output/results/fulltab/` (copied per-GSE full tables)
+  - `/output/results/` final integrated result table(s), with expression/CV/percentiles/DE and promoter sequence annotation.
+
+---
+
+## Nextflow version of Promotheus
+
+A Nextflow pipeline wrapper is now included (`main.nf` + `nextflow.config`) to execute the same Dockerized Promotheus workflow in a reproducible workflow engine.
+
+### Run
+
+```bash
+nextflow run main.nf \
+  --input_dir /path/to/input \
+  --output_dir /path/to/output \
+  --asmcode ASM317683v1 \
+  --threads 8 \
+  --memory 4000 \
+  --correction_de none \
+  --pvalue 0.05 \
+  --operons_detection true \
+  --amino_diff 3 \
+  --similarity 30 \
+  --operons_threshold 3 \
+  --multitaxa false
+```
+
+### Main behavior
+
+- `VALIDATE_INPUTS` process checks mandatory options and asmcode format.
+- `RUN_PROMOTHEUS_DOCKER` process runs `docker run ste40/promotheus` with the same environment-variable interface used by the original pipeline.
+- Nextflow artifacts (trace/report/timeline/dag) are enabled in `nextflow.config`.
+
+### Lightweight test mode
+
+Use this profile to validate parameters and Nextflow wiring without launching Docker analysis:
+
+```bash
+nextflow run main.nf -profile test --input_dir /path/to/input --asmcode ASM317683v1
+```
+
+### CI smoke test
+
+A GitHub Actions workflow (`.github/workflows/nextflow-smoke.yml`) now runs a lightweight smoke test on every push/PR:
+
+```bash
+bash scripts/test_nextflow.sh
+```
+
+The smoke test executes `main.nf` with `-profile test`, so it validates parameter parsing and workflow wiring without launching the heavy Docker analysis process.
+
