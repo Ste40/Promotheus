@@ -1,42 +1,66 @@
-# Function to download file fna -->  .gbff
-download<-function(ftp_path,path_dir_org,asm){
-  
-    ftp_string<- gsub(".*/", "", ftp_path)
-    GFF_ftp<- paste0(ftp_path, "/", ftp_string, "_genomic.gbff.gz")
-    
-    annot<- curl_download(GFF_ftp, destfile=paste0(path_dir_org,"/", ftp_string, "_genomic.gbff.gz"), mode="wb")
-    new_name<-gsub(".+gbff.gz",paste(path_dir_org,"/",asm,".gb",sep=""),annot)
-    gunzip(filename=annot,destname=new_name,overwrite=T)
- 
+# Build current NCBI RefSeq assembly file URLs. The assembly summary now returns
+# ftp_path values with a trailing slash, while older snapshots did not.
+refseq_file_location <- function(ftp_path, suffix) {
+  if (length(ftp_path) != 1 || is.na(ftp_path) || !nzchar(ftp_path) || ftp_path == "na") {
+    stop("RefSeq assembly has no usable ftp_path")
+  }
+
+  ftp_path <- sub("/+$", "", ftp_path)
+  ftp_string <- basename(ftp_path)
+  if (!nzchar(ftp_string)) {
+    stop("Unable to determine RefSeq assembly name from ftp_path: ", ftp_path)
+  }
+
+  list(
+    url = paste0(ftp_path, "/", ftp_string, suffix),
+    filename = paste0(ftp_string, suffix)
+  )
 }
 
-# Function to read assembly_summary and to download file for each version of genome  
-reading_testo<-function(path_output,tmp_genome_path,asm_code,asm_pref){
+# Download a compressed GenBank assembly and extract it locally.
+download <- function(ftp_path, path_dir_org, asm) {
+    location <- refseq_file_location(ftp_path, "_genomic.gbff.gz")
+    annot <- curl_download(
+      location$url,
+      destfile = file.path(path_dir_org, location$filename),
+      mode = "wb"
+    )
+    new_name <- file.path(path_dir_org, paste0(asm, ".gb"))
+    gunzip(filename = annot, destname = new_name, overwrite = TRUE)
 
-  if (!file.exists(file.path("/output/assembly_summary.txt"))){
+}
+
+# Function to read assembly_summary and to download file for each version of genome
+reading_testo <- function(path_output, tmp_genome_path, asm_code, asm_pref) {
+
+  summary_path <- file.path(path_output, "assembly_summary.txt")
+  if (!file.exists(summary_path)){
       message("Downloading assembly summary from RefSeq..")
-      #summary<- curl_download("https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_refseq.txt" , destfile=file.path("/output/assembly_summary.txt"), mode="wb")
-      summary<- curl_download("https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_refseq.txt" , destfile=file.path(path_output,"/assembly_summary.txt"), mode="wb")
+      curl_download(
+        "https://ftp.ncbi.nlm.nih.gov/genomes/ASSEMBLY_REPORTS/assembly_summary_refseq.txt",
+        destfile = summary_path,
+        mode = "wb"
+      )
   }
 
-  #summary<- fread(file.path("/output/assembly_summary.txt"), quote=F)
-  summary<- fread(file.path(path_output,"assembly_summary.txt"), quote=F)
-  
-  ind<-c()
-  taxid_species<-c()
-  for(i in 1:length(asm_code)){
-    ind<-which(summary$asm_name==asm_code[i])
-    taxid_species[i]<-summary$species_taxid[ind]
+  summary <- fread(summary_path, quote = FALSE)
+
+  requested_assemblies <- unique(c(asm_code, asm_pref))
+  assembly_indices <- match(requested_assemblies, summary$asm_name)
+  if (anyNA(assembly_indices)) {
+    stop(
+      "Assembly name(s) not found in the current RefSeq summary: ",
+      paste(requested_assemblies[is.na(assembly_indices)], collapse = ", ")
+    )
   }
-  ind_pref<-which(summary$asm_name==asm_pref)
-  taxid_species<-unique(summary$species_taxid[ind],summary$species_taxid[ind_pref])
-  
-  ind<-c()
-  for(i in 1:length(taxid_species)){
-    ind<-c(ind,which(summary$species_taxid==taxid_species[i]))
+
+  taxid_species <- unique(summary$species_taxid[assembly_indices])
+  row <- summary[summary$species_taxid %in% taxid_species,]
+  row <- row[!is.na(row$ftp_path) & row$ftp_path != "na" & nzchar(row$ftp_path),]
+  if (nrow(row) == 0L) {
+    stop("No downloadable RefSeq assemblies were found for the requested species")
   }
-  row<-summary[ind,]
-  
+
   ind<-which(row$assembly_level=="Complete Genome")
   if(length(ind)>0){
     row<-row[ind,]
@@ -49,8 +73,8 @@ reading_testo<-function(path_output,tmp_genome_path,asm_code,asm_pref){
     strain_name[i]<-gsub("\\.","",strain_name[i])
   }
   unique_strain_name<-unique(strain_name)
-    
-  for(i in 1:length(unique_strain_name)){
+
+  for(i in seq_along(unique_strain_name)){
     ind<-which(unique_strain_name[i]==strain_name)
     if(length(ind)>1){
       ind<-ind[1]
