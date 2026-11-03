@@ -54,5 +54,6 @@ bash "$root_dir/tests/shell/test_nextflow.sh"
 python3 "$root_dir/tests/test_modular_workflow.py"
 python3 "$root_dir/tests/test_parallel_orthology.py"
 python3 "$root_dir/tests/test_source_cache.py"
+python3 "$root_dir/tests/test_resource_reservation.py"
 
 echo "PASS: all Promotheus Nextflow tests"

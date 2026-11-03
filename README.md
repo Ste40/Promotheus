@@ -334,6 +334,20 @@ modular adapter. See the [repeatability correction](docs/ORTHOLOGY_REPRODUCIBILI
 and [timing benchmark](docs/MODULAR_NEXTFLOW.md#parallel-orthology-benchmark-on-28-october-2026).
 These checks do not establish biological equivalence with legacy results.
 
+For complete runs, opt into `-profile standard,balanced` to reserve CPU and
+memory for one RNA-Seq task. For example, with `--threads 8 --memory 20000
+--task_cpus 2 --task_memory 8000 --orthology_cpus 1 --orthology_memory 3000
+--max_orthology_parallel 6`, the effective orthology limit is **4**. The limit is
+the minimum of the requested concurrency and the CPU/memory slots remaining
+after reserving one scientific task. An extra executor queue slot allows that
+task to be submitted alongside the orthology jobs. A budget that cannot fit
+both tasks fails before execution.
+
+The reserve remains in effect after RNA-Seq finishes, so it can lengthen the
+orthology branch; a shorter overall runtime is not guaranteed. Default runs
+and `ORTHOLOGY_ONLY` should use `standard` without `balanced`. Changing this
+scheduling option preserves reusable scientific results with `-resume`.
+
 The previous workflow is retained as `main_legacy.nf`, including its cache and curated-group behavior. The September real-data evidence applies to that legacy orchestration. The modular adapter has separate successful two-GSE real-run evidence from October, described above; formal biological equivalence remains untested.
 
 ### Deterministic test profile

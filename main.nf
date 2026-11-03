@@ -69,13 +69,33 @@ def sourceCodeHash(root, folders) {
     hash.digest().encodeHex().toString()
 }
 
+def orthologyForkLimit() {
+    def requested = params.max_orthology_parallel as int
+    if (!params.reserve_rnaseq_resources) return requested
+    if ((params.max_gse_parallel as int) < 1 || (params.orthology_cpus as int) < 1 || (params.orthology_memory as int) < 512)
+        error 'Balanced scheduling requires positive concurrency/CPU requests and at least 512 MB per orthology pair'
+    def taskCpus = params.task_cpus ?: Math.max(1, (int)((params.threads as int) / (params.max_gse_parallel as int)))
+    def taskMemory = params.task_memory ?: Math.max(512, (int)((params.memory as int) / (params.max_gse_parallel as int)))
+    def cpuSlots = (int)Math.floor(((params.threads as int) - (taskCpus as int)) / (double)(params.orthology_cpus as int))
+    def memorySlots = (int)Math.floor(((params.memory as int) - (taskMemory as int)) / (double)(params.orthology_memory as int))
+    def effective = Math.min(requested, Math.min(cpuSlots, memorySlots))
+    if (effective < 1)
+        error 'Cannot reserve one RNA-Seq task alongside one orthology pair: increase --threads/--memory or reduce per-task requests; disable --reserve_rnaseq_resources for orthology-only runs'
+    return effective
+}
+
 def validateOrthologyResources() {
     if ((params.max_orthology_parallel as int) < 1) error '--max_orthology_parallel must be positive'
     if ((params.orthology_cpus as int) < 1 || (params.orthology_cpus as int) > (params.threads as int))
         error '--orthology_cpus must be positive and fit within --threads'
     if ((params.orthology_memory as int) < 512 || (params.orthology_memory as int) > (params.memory as int))
         error '--orthology_memory must be at least 512 MB and fit within --memory'
+    def forks = orthologyForkLimit()
+    if (params.reserve_rnaseq_resources)
+        log.info "RNA-Seq resource reserve enabled: orthology concurrency capped at ${forks} (requested ${params.max_orthology_parallel})"
 }
+
+def configuredOrthologyForks = orthologyForkLimit()
 
 process ORTHOLOGY_PREPARE {
     label 'scientific'
@@ -97,7 +117,7 @@ process ORTHOLOGY_PREPARE {
 process ORTHOLOGY_PAIR {
     label 'orthology_pair'
     tag "${key}"
-    maxForks params.max_orthology_parallel
+    maxForks configuredOrthologyForks
     input:
     tuple val(key), path(pair)
     path shared
