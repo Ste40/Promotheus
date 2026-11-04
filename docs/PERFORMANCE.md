@@ -1,5 +1,8 @@
 # Nextflow performance measurements
 
+See the [per-task report](TASK_PERFORMANCE.md) for durations, concurrency,
+resource requests and all 136 tasks of the complete run.
+
 ## Full workflow: 3 November 2026
 
 The `standard,balanced` profile ran the modular workflow at commit `5cf286b`

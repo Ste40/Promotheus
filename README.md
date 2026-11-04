@@ -55,7 +55,7 @@ Real runs may take hours and require substantial disk space. Some GEO datasets h
 
 The full Docker-backed Nextflow run on **3 November 2026** completed **136 tasks without cache in 3 h 42 min**, including 127 genome comparisons, GSE8182 and GSE116952. All ten samples were present in the final **352 × 28** table; comparison with the preceding validated run found no differences within the numeric tolerance. Operons were disabled and genomes came from an archived snapshot.
 
-The balanced profile reduced the observed download-to-alignment wait from 2 h 13 min to 1.1 s. The preceding run was partially cached, so these runs do **not** establish an overall speedup. See [performance evidence](docs/PERFORMANCE.md) and [orthology reproducibility](docs/ORTHOLOGY_REPRODUCIBILITY.md). Formal biological equivalence with the original monolithic workflow remains untested.
+The balanced profile reduced the observed download-to-alignment wait from 2 h 13 min to 1.1 s. The preceding run was partially cached, so these runs do **not** establish an overall speedup. See [performance evidence](docs/PERFORMANCE.md), the [per-task report](docs/TASK_PERFORMANCE.md), and [orthology reproducibility](docs/ORTHOLOGY_REPRODUCIBILITY.md). Formal biological equivalence with the original monolithic workflow remains untested.
 
 A fresh two-comparison orthology benchmark on **4 November** took **8 min 46 s serially versus 4 min 58 s in parallel** (1.77×), with byte-identical results. This measures the orthology branch only; see the [method and results](docs/PERFORMANCE.md#controlled-comparison-4-november-2026).
 
