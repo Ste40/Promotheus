@@ -1,134 +1,76 @@
-# Promotheus: a bioinformatic pipeline for the analysis of bacterial transcriptomic data deposited on NCBI databases
+# Promotheus
 
-### Description
-Promotheus is a data-driven pipeline designed to retrieve, process, and integrate publicly available transcriptomic data from bacterial species and their strains. Its main goal is to support the selection of promoters that exhibit either stable (constitutive) or variable (inducible) expression profiles, facilitating biosensor design in synthetic biology applications.
-Promotheus performs data retrieval from public repositories, raw data pre-processing, normalization, and batch effect correction. Gene IDs harmonization is performed through orthogroup identification, allowing a multi-strain and/or multi-species comparisons.
+Promotheus retrieves and integrates bacterial Microarray and RNA-Seq data from NCBI to identify promoters with stable or variable expression. It harmonizes gene identifiers through orthology and produces expression, percentile, variability and promoter-sequence tables.
 
-This project was carried out with the contribution of Stefano Quaranta, Debora Dallera and Lorenzo Pasotti.
+## Run with Nextflow
 
-### Pipeline Overview
-
-<img width="1066" alt="Tubemap_updated_github" src="https://github.com/user-attachments/assets/42159e26-9320-475d-b7b6-ec4db3d7f6ce" />
-
-
----
-
-## Installation
-
-Promotheus is deployed via Docker. If you do not already have Docker installed, follow the instructions for docker installation at https://docs.docker.com/
-
-### Pulling the Docker Image
-
-Once Docker is installed, you can pull the Promotheus image from Docker Hub by running:
+Requirements: **Nextflow ≥23.10, Java ≥17, Python 3 and Docker running**. The workflow launches Docker automatically and mounts the updated repository scripts into a pinned `linux/amd64` image; ARM machines use emulation.
 
 ```bash
-docker pull ste40/promotheus
-```
-## Parameters
+git clone --branch codex/reimplement-pipeline-in-nextflow https://github.com/Ste40/Promotheus.git
+cd Promotheus
 
-
-| Environment Variable | Default | Description                                                                                                 | Value | **Required?**             |
-|----------------------|---------|-------------------------------------------------------------------------------------------------------------|------------|----------------------------|
-| `THREADS`           | 8       | Number of threads for parallel processing.                                                                  | Numeric    | No                         |
-| `MEMORY`            | 4000    | Maximum memory allocation (MB) for Rockhopper execution.                                            | Numeric    | No                         |
-| `CORRECTION_DE`     | none    | Correction method for multiple testing. See [p.adjust in R documentation](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust) for available options. | Character | No                         |
-| `PVALUE`            | 0.05    | Significance threshold for identifying differentially expressed genes.                                      | Numeric    | No                         |
-| `OPERONS_DETECTION` | TRUE   | Enable or disable operons detection.                                                                        | Logical    | No                         |
-| `AMINO_DIFF`        | 3       | Defines the orthology matching in terms of protein length differences (amino acids) during orthogoup identification.                                       | Numeric    | No                         |
-| `SIMILARITY`        | 30      | Minimum percentage of amino acid sequence similarity required to group genes into the same orthogroup for ID harmonization                                                          | Numeric    | No                         |
-| `ASMcode`           | *NULL* | Assembly accession code for orthofinder mapping.                                                                 | Character | **Yes** (required)         |
-| `OPERONS_THRESHOLD`      | 3 | Number of GSEs per microorganism used for operon identification. | Character | No |
-| `MULTITAXA`      | FALSE | Enable or disable taxon-specific normalization with ComBat. | Character | No |
-
-### Important notes
-
-- `ASMcode` **must** be specified. If not provided, the script will terminate. This genome is **not** used for reads mapping, but rather for orthology-based mapping of GeneIDs across species, reported in the final output table.
-- If `OPERONS_THRESHOLD` is greater than the number of GSEs available for a given specie, it will be adjusted to match the number of available GSEs.
-- When `MULTITAXA` = TRUE, ComBat normalization is performed separately for each taxon, assigning the GSEs of each taxon to distinct batches.
-
-## Input files
-
-The pipeline needs two separate input tables for RNA-Seq and Microarray datasets. Each table must contain the following mandatory columns:
-
-- **Accession**: Accession codes for various datasets (GSEs).
-- **taxon**: Microorganism names, based on NCBI taxonomy name.
-- **reference_genome**: Assembly accession codes for the reference genome used for reads alignment and gene counts quantification.
-
-The examples of these two tables (RNA-Seq and Microarray) are provided in this repository, see Examples directory.
-
-NOTE: It is reccomended to use our GEO_Search.R script to generate these two tables.
-See below for more information.
-
-### Generating input files with GEO_Search.R R script
-
-We provide GEO_Search.R script to help user to find **RNA-Seq** and **Microarray** experiments on NCBI GEO Datasets based on a provided **taxonomic ID (taxID)**.
-
-Features:
-- **Taxonomy Retrieval**: Retrieves the scientific name and subspecies for a given **taxID**.
-- **Genome Assembly**: Fetches the reference genome assembly version for the organism.
-- **GEO Datasets Search**: Searches for RNA-Seq and Microarray datasets from GEO, filtering by dataset type and minimum sample count (4).
-- **Export**: Outputs filtered results to **Excel** files for RNA-Seq and Microarray experiments.
-
-R (version 3.6 or higher recommended) must be installed in your system.
-- Required R packages:
-  - `devtools`
-  - `rentrez`
-  - `openxlsx`
-  - `optparse`
-
-To install the required packages, run the following in R:
-
-```r
-install.packages(c("devtools", "openxlsx", "optparse"))
-devtools::install_github("ropensci/rentrez")
+nextflow run main.nf \
+  -profile standard,balanced \
+  --input_dir /absolute/path/to/input \
+  --output_dir /absolute/path/to/output \
+  --asmcode ASM317683v1 \
+  --threads 8 --memory 20000 \
+  --task_cpus 2 --task_memory 8000 \
+  --orthology_cpus 1 --orthology_memory 3000 \
+  --max_orthology_parallel 6 \
+  --operons_detection false
 ```
 
-Then, the script can be run from command-line, specifying the taxID of interest:
+Allocate the requested resources to Docker. This example uses a 20,000 MB total budget; `balanced` reserves room for one RNA-Seq task and limits orthology to four concurrent comparisons. Use `-profile standard` to omit this reservation. Reserving resources can reduce RNA-Seq waiting time but does not guarantee a shorter total run.
+
+To resume, repeat the command with **`-resume`** and retain the `work/` and `.nextflow/` directories.
+
+## Inputs and parameters
+
+Place exactly two Excel workbooks in the input directory: one filename containing `Microarray`, the other containing `RNA_Seq`. Use the format in [Examples](Examples) or generate tables with `Rscript GEO_Search.R --taxID <taxID>`. Do not include `Output.xlsx` or unrelated workbooks. Input preparation and required R packages are described in the [input guide](docs/LEGACY_USAGE.md#input-files).
+
+| Parameter | Purpose |
+| --- | --- |
+| `--asmcode` | Required orthology reference, in `ASM<digits>v<digits>` format; alignment references come from the input tables. |
+| `--threads`, `--memory` | Total local CPU and memory budget (MB). |
+| `--task_cpus`, `--task_memory` | Resources per Microarray/RNA-Seq/scientific task. |
+| `--max_gse_parallel` | Maximum concurrent tasks per GSE stage (default: 2). |
+| `--max_orthology_parallel` | Maximum concurrent genome comparisons (default: 4). |
+| `--orthology_cpus`, `--orthology_memory` | Resources per genome comparison (defaults: 1 CPU, 3000 MB). |
+| `--operons_detection` | Operon analysis (default: `true`; disabled in the validated example above). |
+
+See [nextflow.config](nextflow.config) for all defaults and the [workflow guide](docs/MODULAR_NEXTFLOW.md) for the DAG, dependencies, resource allocation and restart behavior. Orthology parallelizes by genome; RNA-Seq download/alignment and Microarray analysis parallelize by GSE. With operons enabled, downstream RNA-Seq analysis is grouped by organism.
+
+## Results
+
+- `results/final_table.xlsx` and `.tsv`: integrated expression, percentiles, variability, differential-expression status and promoter sequences.
+- `orthologous_genes.txt`: cross-genome gene mapping.
+- `pipeline_info/`: execution report, timeline, task trace and DAG.
+- `.promotheus-nextflow/output_validation.json`: must report **`"status": "pass"`**.
+
+Real runs may take hours and require substantial disk space. Some GEO datasets have unavailable or unsupported supplementary files; incomplete GSE coverage fails validation.
+
+## Validation and performance
+
+The full Docker-backed Nextflow run on **3 November 2026** completed **136 tasks without cache in 3 h 42 min**, including 127 genome comparisons, GSE8182 and GSE116952. All ten samples were present in the final **352 × 28** table; comparison with the preceding validated run found no differences within the numeric tolerance. Operons were disabled and genomes came from an archived snapshot.
+
+The balanced profile reduced the observed download-to-alignment wait from 2 h 13 min to 1.1 s. The preceding run was partially cached, so these runs do **not** establish an overall speedup. See [performance evidence](docs/PERFORMANCE.md), the [per-task report](docs/TASK_PERFORMANCE.md), and [orthology reproducibility](docs/ORTHOLOGY_REPRODUCIBILITY.md). Formal biological equivalence with the original monolithic workflow remains untested.
+
+A fresh two-comparison orthology benchmark on **4 November** took **8 min 46 s serially versus 4 min 58 s in parallel** (1.77×), with byte-identical results. This measures the orthology branch only; see the [method and results](docs/PERFORMANCE.md#controlled-comparison-4-november-2026).
+
+For a quick orchestration test without Docker or downloads:
 
 ```bash
-Rscript GEO_Search.R --taxID <taxID>
+nextflow run main.nf -profile test \
+  --input_dir tests/fixtures/toy_input \
+  --output_dir /tmp/promotheus-toy --asmcode ASM100001v1
 ```
-NOTE: The script attempts to retrieve data from NCBI, so it may fail if the servers are down or experiencing issues.
 
-## Usage
+Run the regression suite with `bash tests/shell/test_all.sh` (requires Nextflow, Python 3 and R with `openxlsx`). See [validation details](docs/NEXTFLOW_EQUIVALENCE.md).
 
-The pipeline runs within a Docker container. You can set environment variables using the `-e` flag. Make sure to mount your input/output directories with the `-v` flag.
+## Legacy execution and license
 
-WARNING: the scripts provided in this repository can't be executed without the appropriate environment and softwares/packages, which are included in Docker's image.
+The original orchestration remains available through `main_legacy.nf`; direct Docker instructions and output-column descriptions are in the [legacy guide](docs/LEGACY_USAGE.md).
 
-### Docker Run Example
-
-Below is an example command to run the Promotheus pipeline. Adjust the paths and parameters as needed:
-
-```bash
-  -e THREADS=4 \
-  -e MEMORY=4000 \
-  -e CORRECTION_DE=BH \
-  -e PVALUE=0.01 \
-  -e OPERONS_DETECTION=TRUE \
-  -e AMINO_DIFF=5 \
-  -e MULTITAXA=TRUE \
-  -e SIMILARITY=30 \
-  -e ASMcode=ASM317683v1 \
-  -e OPERONS_THRESHOLD=3 \
-  -v /path/to/input/:/input \
-  -v /path/to/output/:/output \
-  ste40/promotheus
-```
-## Output file
-
-The output table contains includes gene expression values, percentiles, coefficient of variation (CV), and Differential expression analysis results. 
-
-### Columns Description
-- **Gene_name**: The name of the gene.
-- **GeneID**: The unique identifier for the gene, according to the gene nomenclature of the user-provided ASMcode.
-- **Expression_GSEXXXXX**: Gene expression values for each GSE.
-- **Mean_Expression**: The average expression value of the gene across all samples in the datasets.
-- **CV**: Coefficient of variation, indicating the variability of the gene expression across samples, computed as the standard deviation of log-transformed expression values. A higher CV suggests more variation in gene expression.
-- **Percentile_GSEXXXXX**: Percentile values for the gene expression in different datasets.
-- **Mean_Percentile**: The average percentile value across all datasets for the gene.
-- **Percentile_SD**: Standard deviation of the percentile values across all datasets for the gene.
-- **DE**: Differential expression status (YES|NO), in at least one GSE.
-- **Sequence**: Contains the DNA sequence upstream of the gene.
-
-An example of output table is provided in this repository (Output.xlsx)
+Contributors: Stefano Quaranta, Debora Dallera and Lorenzo Pasotti. Distributed under GNU GPL v3; bundled components retain their licenses—see [third-party notices](THIRD_PARTY_NOTICES.md).

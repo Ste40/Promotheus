@@ -1,0 +1,51 @@
+{
+  "status": "pass",
+  "runs": {
+    "serial": {
+      "command_wall_seconds": 534.1186992089999,
+      "tasks": 5,
+      "pairs": 2,
+      "workflow_seconds": 525.784,
+      "pair_window_seconds": 495.903,
+      "peak_concurrent_pairs": 1,
+      "output_sha256": "69e2584fecfe64c6ee774666b7ee25c6277e75be4e32fe6bd5efbf06ac738f7a",
+      "mapping_sha256": {
+        "genome_000002": "a849624d54c2f4ed5848eace0470c1828b1226c9be38103706792e844eda0715",
+        "genome_000001": "69708728a7216538d4d6005d0e566c853b3ef82da3b92a3ee70729b1cc04887e"
+      },
+      "trace": "serial/output/pipeline_info/execution_trace_2026-11-04_09-00-44.txt"
+    },
+    "parallel": {
+      "command_wall_seconds": 305.798668333,
+      "tasks": 5,
+      "pairs": 2,
+      "workflow_seconds": 297.766,
+      "pair_window_seconds": 271.376,
+      "peak_concurrent_pairs": 2,
+      "output_sha256": "69e2584fecfe64c6ee774666b7ee25c6277e75be4e32fe6bd5efbf06ac738f7a",
+      "mapping_sha256": {
+        "genome_000001": "69708728a7216538d4d6005d0e566c853b3ef82da3b92a3ee70729b1cc04887e",
+        "genome_000002": "a849624d54c2f4ed5848eace0470c1828b1226c9be38103706792e844eda0715"
+      },
+      "trace": "parallel/output/pipeline_info/execution_trace_2026-11-04_09-09-38.txt"
+    }
+  },
+  "identical_outputs": true,
+  "workflow_speedup": 1.765762377168649,
+  "limits": "One serial/parallel pair on local archived genomes; no Nextflow resume. OS/Docker filesystem caches are not flushed. Fixed serial-first order and host load can affect timing. Orthology-only measurement, not end-to-end speedup; CPU and RSS from nested Docker are not inferred from the Nextflow trace.",
+  "scientific_code_commit": "5cf286b0e5ddf61d7b33efe035cfe47fe9c46369",
+  "reference": "ASM317683v1",
+  "comparison_genomes": [
+    "A12",
+    "AF116-22"
+  ],
+  "total_budget": {
+    "cpus": 4,
+    "memory_mb": 12000
+  },
+  "per_task": {
+    "cpus": 1,
+    "memory_mb": 3000
+  },
+  "date": "2026-11-04"
+}
