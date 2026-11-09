@@ -1,46 +1,24 @@
-MetaData_retrieval <- function(microorganism_table, g, xlsx){
-  
+# Retain the GSM -> SRR association instead of joining independent API orders.
+canonical_run_conditions <- function(tab) {
+  required <- c("GSM", "SRR", "Group", "GroupNumber")
+  if (!all(required %in% names(tab)) || !nrow(tab)) stop("Missing RNA-Seq run metadata")
+  if (anyNA(tab[required]) || any(!grepl("^[SED]RR[0-9]+$", tab$SRR)) ||
+      anyDuplicated(tab$SRR) || anyDuplicated(tab$GSM))
+    stop("RNA-Seq requires unique run IDs and one run per GSM; multiple runs per sample are not supported")
+  groups <- suppressWarnings(as.integer(as.character(tab$GroupNumber)))
+  if (anyNA(groups) || any(groups < 1L)) stop("Invalid RNA-Seq group assignments")
+  tab[order(as.character(tab$SRR), method = "radix"), , drop = FALSE]
+}
+
+MetaData_retrieval <- function(microorganism_table, g, xlsx) {
   source("/scripts/RNA-Seq/Groups_retrieval.R")
-  GSEs=unlist(str_split(microorganism_table$GSE[g], ";"))
-  GSEs=paste0("GSE", GSEs) 
-  Name_ID=microorganism_table$taxon[g]
-  Condition_list=list()
-  Acclist=list()
-  xlsx_app <- data.frame(m.o.name= character(),
-                     GSE= character(), 
-                     Experimental_condition= character(), 
-                     Groups= character(),
-                     Accession_codes= character())
-  
-  for (r in 1:length(GSEs)){ 
-    
-    GSE<- GSEs[r]
-    Condition_list[[r]]<- Groups_retrieval(GSE)
-    Condition_list[[r]]<- append(GSE, Condition_list[[r]])
-    Condition_list[[r]]<- append(Name_ID, Condition_list[[r]])
-
-    Condition_list[[r]]$Group<-gsub(",","",Condition_list[[r]]$Group)
-    
-    srp_to_gse_cmd<- paste('pysradb gse-to-srp',GSE, '--saveto gse.txt')
-    system(srp_to_gse_cmd)
-    srp_table<- fread("gse.txt")
-    srp<- srp_table[1,"study_accession"]
-    
-    srp_metadata<- paste('pysradb metadata',srp,'--saveto srp_metadata.txt')
-    system(srp_metadata)
-    metadata_table<- fread("srp_metadata.txt")
-
-    srp_to_srr_cmd<- paste('pysradb srp-to-srr',srp,'--saveto srp.txt')
-    system(srp_to_srr_cmd)
-    
-    full_report<- fread("srp.txt")
-    Acclist[[r]]<- rev(full_report$run_accession)
-    xlsx_app[nrow(xlsx_app)+1, ] <- c(unlist(Condition_list[[r]][1]), 
-                              unlist(Condition_list[[r]][2]), 
-                              paste(as.vector(unlist(lapply(Condition_list[r], function(x) x['Group']))), collapse=","), 
-                              paste(as.vector(unlist(lapply(Condition_list[r], function(x) x['GroupNumber']))), collapse=","),
-                              paste(Acclist[[r]], collapse=','))
-
-  }
-  return(xlsx_app)
+  GSEs <- paste0("GSE", unlist(str_split(microorganism_table$GSE[g], ";")))
+  rows <- lapply(GSEs, function(gse) {
+    tab <- canonical_run_conditions(Groups_retrieval(gse))
+    data.frame(m.o.name = microorganism_table$taxon[g], GSE = gse,
+      Experimental_condition = paste(gsub(",", "", tab$Group), collapse = ","),
+      Groups = paste(tab$GroupNumber, collapse = ","),
+      Accession_codes = paste(tab$SRR, collapse = ","), stringsAsFactors = FALSE)
+  })
+  do.call(rbind, rows)
 }

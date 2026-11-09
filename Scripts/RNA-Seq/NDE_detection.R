@@ -1,3 +1,14 @@
+# Align labels to count columns using run IDs; never infer identity from position.
+match_count_metadata <- function(files, accessions, conditions, groups) {
+  ids <- sub("^([SED]RR[0-9]+)(?:_|\\.).*$", "\\1", basename(files), perl = TRUE)
+  if (is.null(accessions) || length(accessions) != length(conditions) ||
+      length(accessions) != length(groups) || anyNA(accessions) || anyDuplicated(accessions) ||
+      anyDuplicated(ids) || !setequal(ids, accessions))
+    stop("Count files and RNA-Seq run metadata do not match uniquely")
+  order <- match(ids, accessions)
+  list(ids = ids, conditions = conditions[order], groups = groups[order])
+}
+
 expression_statistics <- function(expression_matrix) {
   expression_matrix <- as.matrix(expression_matrix)
   storage.mode(expression_matrix) <- "double"
@@ -65,7 +76,7 @@ is_valid_rnaseq_full_tab <- function(path) {
 }
 
 NDE_detection <- function(GSE, GSEdirectory, strandness, threads, m.o.subpath, GSEconditions, m.o.correct,
-  od_full_tabs, CORRECTION_DE, OPERONS_DETECTION, PVALUE) {
+  od_full_tabs, CORRECTION_DE, OPERONS_DETECTION, PVALUE, run_accessions = NULL) {
 
   suppressWarnings(dir.create(od_full_tabs))
   setwd(GSEdirectory)
@@ -158,11 +169,17 @@ NDE_detection <- function(GSE, GSEdirectory, strandness, threads, m.o.subpath, G
     if (length(tablefiles) > 1L) {
       for (i in seq.int(2L, length(tablefiles))) {
         count_table <- read.table(tablefiles[i], header = TRUE, sep = "\t", quote = "")
+        if (anyDuplicated(count_table$GeneID) || anyDuplicated(final_tab$GeneID) ||
+            !setequal(final_tab$GeneID, count_table$GeneID)) stop("Count tables have inconsistent gene IDs")
+        count_table <- count_table[match(final_tab$GeneID, count_table$GeneID), , drop = FALSE]
         final_tab <- data.frame(final_tab, count_table[, ncol(count_table)])
       }
     }
 
-    cond <- str_split(GSEconditions$Experimental_condition, ",")[[1]]
+    metadata <- match_count_metadata(tablefiles, run_accessions,
+      str_split(GSEconditions$Experimental_condition, ",")[[1]],
+      as.numeric(strsplit(GSEconditions$Groups, ",")[[1]]))
+    cond <- metadata$conditions
     tabDES <- final_tab[, -(1:6)]
     colnames(tabDES) <- cond
     rownames(tabDES) <- final_tab$GeneID
@@ -179,7 +196,7 @@ NDE_detection <- function(GSE, GSEdirectory, strandness, threads, m.o.subpath, G
 
     my_data <- normalized_counts
     expression_matrix <- data.matrix(my_data[, 7:ncol(my_data), drop = FALSE])
-    groups <- as.numeric(strsplit(GSEconditions$Groups, ",")[[1]])
+    groups <- metadata$groups
 
     ## Computing gene expressions: CV, SD, means
     statistics <- expression_statistics(expression_matrix)

@@ -1,3 +1,26 @@
+# Reject ambiguous layouts before indexing or launching an aligner.
+validated_fastq_layout <- function(directory, accessions) {
+  if (!length(accessions) || anyNA(accessions) || anyDuplicated(accessions) ||
+      any(!grepl("^[SED]RR[0-9]+$", accessions))) stop("Invalid or duplicate run accessions")
+  expected <- character()
+  layouts <- vapply(accessions, function(code) {
+    single <- paste0(code, ".fastq.gz")
+    paired <- paste0(code, c("_1.fastq.gz", "_2.fastq.gz"))
+    has_single <- file.exists(file.path(directory, single))
+    has_pairs <- file.exists(file.path(directory, paired))
+    if (has_single && !any(has_pairs)) files <- single
+    else if (!has_single && all(has_pairs)) files <- paired
+    else stop("Missing, incomplete or ambiguous FASTQ layout for ", code)
+    if (any(file.info(file.path(directory, files))$size == 0)) stop("Empty FASTQ for ", code)
+    expected <<- c(expected, files)
+    length(files)
+  }, integer(1))
+  if (length(unique(layouts)) != 1L) stop("Mixed single-end and paired-end runs within a GSE are not supported")
+  if (!setequal(list.files(directory, pattern = "\\.fastq\\.gz$"), expected))
+    stop("Unexpected FASTQ files not associated with requested runs")
+  if (layouts[[1]] == 2L) "paired" else "single"
+}
+
 run_samtools <- function(arguments, runner = system2) {
   status <- tryCatch(
     suppressWarnings(runner("samtools", args = arguments)),
@@ -25,6 +48,7 @@ infer_experiment_stats <- function(bam_file, runner = system2) {
 
 BAM_parsing <- function(GSE, m.o.subpath, GSEdirectory, Acclist, threads){
 
+  read_layout <- validated_fastq_layout(GSEdirectory, Acclist)
   setwd(m.o.subpath)
   layouts<- list()
 
@@ -68,7 +92,7 @@ BAM_parsing <- function(GSE, m.o.subpath, GSEdirectory, Acclist, threads){
   if(identical(list.files(pattern="*fastq.gz.subread.BAM$"), character(0))){
     readsfiles <- list.files(pattern="*.fastq.gz$", full.names=FALSE, recursive=FALSE)
 
-    if(length(readsfiles)==length(Acclist)*2){
+    if(read_layout == "paired"){
 
     for(i in seq(from=1, to=length(readsfiles), by=2)){
       align(index= file.path(path=m.o.subpath, "my_index"), readfile1= readsfiles[i], readfile2=readsfiles[i+1], nthread=threads, type="rna", output_file = paste(readsfiles[i],"subread", output_format="BAM" ,sep="."))

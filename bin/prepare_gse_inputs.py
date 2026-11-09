@@ -56,10 +56,13 @@ def prepare(input_dir, output_dir):
     for workbook in sorted(Path(input_dir).glob("*.xlsx")):
         kind = classify(workbook)
         rows = first_sheet_rows(workbook)
-        header = rows[0]
+        header = list(rows[0])
+        if "GSE" not in header:
+            header.append("GSE")
         for ordinal, row in enumerate(rows[1:]):
             if not any(row):
                 continue
+            row = list(row) + [""] * (len(header) - len(row))
             values = dict(zip(header, row))
             accession = values["Accession"]
             # The legacy R path replaces punctuation with spaces. Reject ambiguous paths.

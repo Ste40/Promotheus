@@ -75,7 +75,7 @@ NOTE: The script attempts to retrieve data from NCBI, so it may fail if the serv
 
 ### Option 1: Docker
 
-The pipeline runs within a Docker container. Set parameters with the `-e` flag and mount the input and output directories with `-v`. Run the command from the repository root: the ten additional read-only mounts apply the same compatibility and performance fixes used automatically by Nextflow.
+The pipeline runs within a Docker container. Set parameters with the `-e` flag and mount the input and output directories with `-v`. Run the command from the repository root: the additional read-only mounts apply the same compatibility and performance fixes used automatically by Nextflow.
 
 WARNING: the scripts provided in this repository can't be executed without the appropriate environment and softwares/packages, which are included in Docker's image.
 
@@ -105,6 +105,8 @@ docker run --rm -it \
   -v "$PWD/Scripts/Microarray/metadata_retrieval.R:/scripts/Microarray/metadata_retrieval.R:ro" \
   -v "$PWD/Scripts/Microarray/intra_experiment_analysis.R:/scripts/Microarray/intra_experiment_analysis.R:ro" \
   -v "$PWD/Scripts/RNA-Seq/Data_retrieval.R:/scripts/RNA-Seq/Data_retrieval.R:ro" \
+  -v "$PWD/Scripts/RNA-Seq/MetaData_retrieval.R:/scripts/RNA-Seq/MetaData_retrieval.R:ro" \
+  -v "$PWD/Scripts/RNA-Seq/Groups_retrieval.R:/scripts/RNA-Seq/Groups_retrieval.R:ro" \
   -v "$PWD/Scripts/RNA-Seq/BAM_parsing.R:/scripts/RNA-Seq/BAM_parsing.R:ro" \
   -v "$PWD/Scripts/RNA-Seq/NDE_detection.R:/scripts/RNA-Seq/NDE_detection.R:ro" \
   -v "$PWD/Scripts/RNA-Seq/Pipeline_bash_RNA_Seq.R:/scripts/RNA-Seq/Pipeline_bash_RNA_Seq.R:ro" \

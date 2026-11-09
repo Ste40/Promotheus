@@ -7,6 +7,8 @@ import argparse
 import csv
 import hashlib
 import json
+import math
+from collections import Counter
 import re
 import sys
 from pathlib import Path
@@ -137,6 +139,32 @@ def main() -> int:
             )
         if not data_rows:
             errors.append("final_table.xlsx contains no genes")
+        if len(headers) != len(set(headers)):
+            errors.append("final_table.xlsx has duplicate column names")
+        if "GeneID" in headers:
+            index = headers.index("GeneID")
+            genes = [row[index] if index < len(row) else "" for row in data_rows]
+            if any(not gene for gene in genes) or len(genes) != len(set(genes)):
+                errors.append("final_table.xlsx has empty or duplicate GeneID values")
+        numeric = [i for i, name in enumerate(headers)
+                   if name.startswith(("Expression_", "Percentile_")) or
+                   name in ("Mean_Expression", "CV", "Mean_Percentile")]
+        invalid_numeric = 0
+        for row in data_rows:
+            for i in numeric:
+                try:
+                    valid = math.isfinite(float(row[i]))
+                except (ValueError, TypeError, IndexError):
+                    valid = False
+                invalid_numeric += not valid
+        if invalid_numeric:
+            errors.append(f"final_table.xlsx has {invalid_numeric} missing, nonnumeric or non-finite numeric values")
+        expression_counts = Counter(re.match(r"^Expression_(GSE\d+)(?:\.|$)", h).group(1)
+                                    for h in headers if re.match(r"^Expression_(GSE\d+)(?:\.|$)", h))
+        percentile_counts = Counter(re.match(r"^Percentile_(GSE\d+)(?:\.|$)", h).group(1)
+                                    for h in headers if re.match(r"^Percentile_(GSE\d+)(?:\.|$)", h))
+        if expression_counts != percentile_counts:
+            errors.append("Expression and percentile sample-column counts differ")
         if "Sequence" in headers and data_rows:
             sequence_index = headers.index("Sequence")
             invalid_lengths = 0
@@ -158,6 +186,8 @@ def main() -> int:
                     errors.append("final_table.tsv headers differ from final_table.xlsx")
                 if len(tsv_rows[1:]) != len(data_rows):
                     errors.append("final_table.tsv row count differs from final_table.xlsx")
+                elif tsv_rows[1:] != data_rows:
+                    errors.append("final_table.tsv values differ from final_table.xlsx")
             except (OSError, csv.Error) as exc:
                 errors.append(f"cannot read final_table.tsv: {exc}")
 

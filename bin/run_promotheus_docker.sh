@@ -30,6 +30,8 @@ refseq_download_script=""
 microarray_metadata_script=""
 microarray_intra_script=""
 rna_data_retrieval_script=""
+rna_metadata_script=""
+rna_groups_script=""
 rna_bam_parsing_script=""
 rna_nde_detection_script=""
 rna_pipeline_script=""
@@ -63,6 +65,8 @@ while [[ $# -gt 0 ]]; do
     --microarray-metadata-script) microarray_metadata_script="$2"; shift 2 ;;
     --microarray-intra-script) microarray_intra_script="$2"; shift 2 ;;
     --rna-data-retrieval-script) rna_data_retrieval_script="$2"; shift 2 ;;
+    --rna-metadata-script) rna_metadata_script="$2"; shift 2 ;;
+    --rna-groups-script) rna_groups_script="$2"; shift 2 ;;
     --rna-bam-parsing-script) rna_bam_parsing_script="$2"; shift 2 ;;
     --rna-nde-detection-script) rna_nde_detection_script="$2"; shift 2 ;;
     --rna-pipeline-script) rna_pipeline_script="$2"; shift 2 ;;
@@ -94,12 +98,14 @@ refseq_download_script="${refseq_download_script:-$runner_root/Scripts/Microarra
 microarray_metadata_script="${microarray_metadata_script:-$runner_root/Scripts/Microarray/metadata_retrieval.R}"
 microarray_intra_script="${microarray_intra_script:-$runner_root/Scripts/Microarray/intra_experiment_analysis.R}"
 rna_data_retrieval_script="${rna_data_retrieval_script:-$runner_root/Scripts/RNA-Seq/Data_retrieval.R}"
+rna_metadata_script="${rna_metadata_script:-$runner_root/Scripts/RNA-Seq/MetaData_retrieval.R}"
+rna_groups_script="${rna_groups_script:-$runner_root/Scripts/RNA-Seq/Groups_retrieval.R}"
 rna_bam_parsing_script="${rna_bam_parsing_script:-$runner_root/Scripts/RNA-Seq/BAM_parsing.R}"
 rna_nde_detection_script="${rna_nde_detection_script:-$runner_root/Scripts/RNA-Seq/NDE_detection.R}"
 rna_pipeline_script="${rna_pipeline_script:-$runner_root/Scripts/RNA-Seq/Pipeline_bash_RNA_Seq.R}"
 rna_operons_script="${rna_operons_script:-$runner_root/Scripts/RNA-Seq/Operons_detection.R}"
 interexp_analysis_script="${interexp_analysis_script:-$runner_root/Scripts/Microarray/interexp_analysis.R}"
-for script_path in "$orthology_script" "$refseq_download_script" "$microarray_metadata_script" "$microarray_intra_script" "$rna_data_retrieval_script" "$rna_bam_parsing_script" "$rna_nde_detection_script" "$rna_pipeline_script" "$rna_operons_script" "$interexp_analysis_script"; do
+for script_path in "$orthology_script" "$refseq_download_script" "$microarray_metadata_script" "$microarray_intra_script" "$rna_data_retrieval_script" "$rna_metadata_script" "$rna_groups_script" "$rna_bam_parsing_script" "$rna_nde_detection_script" "$rna_pipeline_script" "$rna_operons_script" "$interexp_analysis_script"; do
   if [[ ! -f "$script_path" ]]; then
     echo "Promotheus overlay script does not exist: $script_path" >&2
     exit 2
@@ -110,6 +116,8 @@ refseq_download_script="$(realpath "$refseq_download_script")"
 microarray_metadata_script="$(realpath "$microarray_metadata_script")"
 microarray_intra_script="$(realpath "$microarray_intra_script")"
 rna_data_retrieval_script="$(realpath "$rna_data_retrieval_script")"
+rna_metadata_script="$(realpath "$rna_metadata_script")"
+rna_groups_script="$(realpath "$rna_groups_script")"
 rna_bam_parsing_script="$(realpath "$rna_bam_parsing_script")"
 rna_nde_detection_script="$(realpath "$rna_nde_detection_script")"
 rna_pipeline_script="$(realpath "$rna_pipeline_script")"
@@ -188,6 +196,8 @@ docker_args+=(
   -v "$microarray_intra_script:/scripts/Microarray/intra_experiment_analysis.R:ro"
   -v "$rna_data_retrieval_script:/scripts/RNA-Seq/Data_retrieval.R:ro"
   -v "$rna_bam_parsing_script:/scripts/RNA-Seq/BAM_parsing.R:ro"
+  -v "$rna_metadata_script:/scripts/RNA-Seq/MetaData_retrieval.R:ro"
+  -v "$rna_groups_script:/scripts/RNA-Seq/Groups_retrieval.R:ro"
   -v "$rna_nde_detection_script:/scripts/RNA-Seq/NDE_detection.R:ro"
   -v "$rna_pipeline_script:/scripts/RNA-Seq/Pipeline_bash_RNA_Seq.R:ro"
   -v "$rna_operons_script:/scripts/RNA-Seq/Operons_detection.R:ro"

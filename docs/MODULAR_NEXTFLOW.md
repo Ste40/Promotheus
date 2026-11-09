@@ -282,3 +282,31 @@ Evidence: `../real-runs/2026-10-29-full-pipeline/real_validation.json`,
 `comparison_with_previous.json`, `performance.json`, the timestamped traces,
 and `output/results/final_table.xlsx`. The audit distinguishes cached work,
 newly executed stage spans, and the gap between RNA download and alignment.
+
+## RNA-Seq identity and output checks (9 November 2026)
+
+Run metadata now preserves the GSM-to-SRR association returned by the per-GSM
+lookup. Count-table columns are matched to those run IDs before assigning
+conditions and groups. Unmatched or duplicate runs stop the analysis. Gene
+rows in count tables are also matched by GeneID before merging columns.
+
+The supported layout is one run per GSM and a uniform single-end or paired-end
+layout within each GSE. Multiple runs per GSM, mixed layouts, missing mates,
+empty FASTQs and unexpected run files are rejected explicitly. Supporting
+technical runs or mixed layouts requires a separate sample-aware aggregation
+path; they must not be treated as independent biological replicates.
+
+The minimal three-column workbook contract remains supported: the splitter
+creates the numeric GSE field from Accession when absent. Final validation now
+checks finite numeric values, nonempty unique GeneIDs, unique headers, matching
+expression/percentile column counts, and cell-level agreement between Excel
+and TSV. This does not establish biological correctness or compare the number
+of columns against live GEO sample counts.
+
+Regression coverage: `tests/test_rnaseq_identity.R` and
+`tests/test_strict_output_validation.py`, included in `test_all.sh`. The RNA
+identity tests also run inside the pinned image without network access.
+Historical full biological benchmarks predate these fixes; a fresh complete
+biological benchmark has not been performed for this revision. Correcting
+sample-to-condition assignments can legitimately change differential-expression
+results on datasets whose metadata and count-file ordering differed.

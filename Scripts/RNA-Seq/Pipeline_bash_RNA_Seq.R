@@ -166,7 +166,7 @@ process_rnaseq_gse <- function(r, threads, memory) {
 
   message("I'm detecting Not-Differentially Expressed (NDE) genes, please wait")
   if (!isTRUE(NDE_detection(GSE, GSEdirectory, strandness, threads, m.o.subpath, GSEconditions, m.o.correct,
-    od_full_tabs, CORRECTION_DE, OPERONS_DETECTION, PVALUE))) {
+    od_full_tabs, CORRECTION_DE, OPERONS_DETECTION, PVALUE, Acclist))) {
     stop("Oooops! Something went wrong during NDE identification")
   }
   message("Success: NDE genes detected!")

@@ -61,6 +61,8 @@ process RUN_PROMOTHEUS {
     path microarray_metadata_script
     path microarray_intra_script
     path rna_data_retrieval_script
+    path rna_metadata_script, stageAs: 'rnaseq_metadata.R'
+    path rna_groups_script
     path rna_bam_parsing_script
     path rna_nde_detection_script
     path rna_pipeline_script
@@ -87,6 +89,8 @@ process RUN_PROMOTHEUS {
       --microarray-metadata-script '${microarray_metadata_script}' \\
       --microarray-intra-script '${microarray_intra_script}' \\
       --rna-data-retrieval-script '${rna_data_retrieval_script}' \\
+      --rna-metadata-script '${rna_metadata_script}' \\
+      --rna-groups-script '${rna_groups_script}' \\
       --rna-bam-parsing-script '${rna_bam_parsing_script}' \\
       --rna-nde-detection-script '${rna_nde_detection_script}' \\
       --rna-pipeline-script '${rna_pipeline_script}' \\
@@ -191,6 +195,8 @@ workflow {
     microarray_metadata_script = file("${projectDir}/Scripts/Microarray/metadata_retrieval.R", checkIfExists: true)
     microarray_intra_script = file("${projectDir}/Scripts/Microarray/intra_experiment_analysis.R", checkIfExists: true)
     rna_data_retrieval_script = file("${projectDir}/Scripts/RNA-Seq/Data_retrieval.R", checkIfExists: true)
+    rna_metadata_script = file("${projectDir}/Scripts/RNA-Seq/MetaData_retrieval.R", checkIfExists: true)
+    rna_groups_script = file("${projectDir}/Scripts/RNA-Seq/Groups_retrieval.R", checkIfExists: true)
     rna_bam_parsing_script = file("${projectDir}/Scripts/RNA-Seq/BAM_parsing.R", checkIfExists: true)
     rna_nde_detection_script = file("${projectDir}/Scripts/RNA-Seq/NDE_detection.R", checkIfExists: true)
     rna_pipeline_script = file("${projectDir}/Scripts/RNA-Seq/Pipeline_bash_RNA_Seq.R", checkIfExists: true)
@@ -211,6 +217,8 @@ workflow {
       microarray_metadata_script,
       microarray_intra_script,
       rna_data_retrieval_script,
+      rna_metadata_script,
+      rna_groups_script,
       rna_bam_parsing_script,
       rna_nde_detection_script,
       rna_pipeline_script,
