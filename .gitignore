@@ -1,0 +1,13 @@
+.nextflow/
+.nextflow.log*
+work/
+results/
+report.html
+timeline.html
+trace.txt
+trace-*.txt
+dag.html
+__pycache__/
+*.pyc
+*.inspect.ndjson
+outputs/

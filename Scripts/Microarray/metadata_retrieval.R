@@ -1,8 +1,18 @@
 # Function that retrieves data related to the analyzed experiments
 data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
-  
+  completed <- file.exists(file.path(path_file, paste0(GSE, "_full_tab.txt")))
+  if (any(completed)) {
+    message("Reusing completed Microarray checkpoints: ", paste(GSE[completed], collapse = ", "))
+    GSE <- GSE[!completed]
+    asm_name <- asm_name[!completed]
+    taxid_species <- taxid_species[!completed]
+  }
+  if (length(GSE) == 0L) {
+    return(invisible(TRUE))
+  }
+
   n_GSE<-length(GSE)
-  
+
   GPL<-c()
   GSM<-matrix(ncol = n_GSE,nrow = 1000)
   n_GSM<-c()
@@ -10,11 +20,11 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
   manufacturer<-c()
   organism<-c()
   taxid<-c()
-  
+
   locus_tag<-matrix(ncol = n_GSE,nrow = 50000)
   gene_name<-matrix(ncol = n_GSE,nrow = 50000)
   nomi_sonda<-matrix(ncol = n_GSE,nrow = 50000)
-  
+
   for(j in 1:n_GSE){
     a<-getGEO(GSE[j],AnnotGPL = T,GSEMatrix = F)
     # GPL
@@ -69,7 +79,7 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
   nomi_sonda<-remove_empty(nomi_sonda,"rows")
   locus_tag<-remove_empty(locus_tag,"rows")
   gene_name<-remove_empty(gene_name,"rows")
-  
+
   # Remove GSE missing information
   ind<-c()
   for(i in 1:ncol(locus_tag)){
@@ -94,7 +104,7 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
     asm_name<-asm_name[-ind]
     taxid_species<-taxid_species[-ind]
   }
-  
+
   # Unique GPL
   GPL_uniche<-unique(GPL)
   n_GPL<-length(GPL_uniche)
@@ -110,7 +120,7 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
     tab<-data.frame(tab)
     write.table(tab,paste(path_file,"/",GPL_uniche[i],".txt",sep=""),sep="\t",quote=F,row.names = F)
   }
-  
+
   tabella1<-matrix(ncol=n_GSE,nrow = 100000)
   # Download data for each GSE
   for(i in 1:n_GSE){
@@ -121,9 +131,9 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
     path2<-c()
     directory<-c()
     ind<-c()
-    
+
     if(dir.exists(paste(path_file,GSE[i],sep="/"))==0 || length(dir(paste(path_file,GSE[i],sep="/"),pattern = "GSM"))!=n_GSM[i]){
-      
+
       for(ii in 1:3){
         tryCatch({
           b<-getGEOSuppFiles(GSE[i],makeDirectory = TRUE,baseDir = path_file)
@@ -139,7 +149,7 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
         }, error = function(e) {
           message("An error occurred while downloading file for",GSE[i])
           Sys.sleep(60)
-          
+
         })
       }
       if (ii == 3) {
@@ -148,7 +158,7 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
       if(length(directory)>0){
         path2<-paste(path1,directory,sep="/")
         untar(path2,exdir=path1)
-        
+
         exprreg<-"^GPL[0-9]+"
         list_file<-dir(path1)
         ind<-which(regexpr(exprreg,list_file)>0)
@@ -161,10 +171,10 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
             if(length(which("GeneSymbol"==nomi_colonne))>0){
               tabella1[1:nrow(tab),i]<-tab$GeneSymbol
             }
-          } 
+          }
           list_file<-list_file[-ind]
         }
-        
+
         if(regexpr("[Aa]ffymetrix",manufacturer[i])>0){
           list_file<-dir(path1)
           expr<-"^GSM.+.CEL.+$"
@@ -202,11 +212,11 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
         }else{
           message(paste("#### No supplementary files are available for ",GSE[i]," ####"))
         }
-        
+
       }
     }
   }
-  
+
   # Get a list of files
   files <- list.files(path_file, pattern = "^GSE")
   GSE_rimasti <- grep("full_tab", files, value = TRUE, invert = TRUE)
@@ -223,7 +233,7 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
     GPL_uniche<-unique(GPL)
     if(is.matrix(GSM)){
       GSM<-GSM[,ind]
-    }    
+    }
     n_canali<-n_canali[ind]
     manufacturer<-manufacturer[ind]
     organism<-organism[ind]
@@ -231,7 +241,7 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
     if(is.matrix(tabella1)){
       tabella1<-tabella1[,ind]
     }
-    
+
     GSE<-GSE_rimasti
     n_GSM<-n_GSM[ind]
     if(is.matrix(locus_tag)){
@@ -243,14 +253,14 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
     if(is.matrix(nomi_sonda)){
       nomi_sonda<-nomi_sonda[,ind]
     }
-    
+
     asm_name<-asm_name[ind]
     taxid_species<-taxid_species[ind]
 
     # metadata information
     tab1<-data.frame(GSE,GPL,organism,taxid,taxid_species,asm_name,n_canali,n_GSM,manufacturer)
     write.xlsx(tab1,paste(path_file,"/total_metadata_GSE.xlsx",sep=""))
-  
+
     # locus_tag
     if(is.matrix(locus_tag)){
       locus_tag<-remove_empty(locus_tag,"rows")
@@ -259,12 +269,12 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
       if(length(ind)>0){
         locus_tag<-locus_tag[-ind]
       }
-      
+
     }
     tab2<-data.frame(locus_tag)
     colnames(tab2)<-GSE
     write.xlsx(tab2,paste(path_file,"/total_locus_tag.xlsx",sep=""))
-    
+
     # gene name
     if(is.matrix(gene_name)){
       gene_name<-remove_empty(gene_name,"rows")
@@ -277,7 +287,7 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
     tab3<-data.frame(gene_name)
     colnames(tab3)<-GSE
     write.xlsx(tab3,paste(path_file,"/total_gene_name.xlsx",sep=""))
-    
+
     # GSM
     if(is.matrix(GSM)){
       GSM<-remove_empty(GSM,"rows")
@@ -286,12 +296,12 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
       if(length(ind)>0){
         GSM<-GSM[-ind]
       }
-      
+
     }
     tab4<-data.frame(GSM)
     colnames(tab4)<-GSE
     write.xlsx(tab4,paste(path_file,"/total_GSM.xlsx",sep=""))
-    
+
     # probe name
     if(is.matrix(tabella1)){
       tabella1<-remove_empty(tabella1,"rows")
@@ -300,20 +310,20 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
       if(length(ind)>0){
         tabella1<-tabella1[-ind]
       }
-      
+
     }
     tab5<-data.frame(tabella1)
     colnames(tab5)<-GSE
     write.xlsx(tab5,paste(path_file,"/total_probes.xlsx",sep=""))
 
   }
-  
-  
+
+
 }
 
 # Retrieving experimental conditions for each GSE
-Groups_retrieval = function(gsm,GSE,path_GSE){ 
-  
+Groups_retrieval = function(gsm,GSE,path_GSE){
+
   cond= list()
   # Retrieving experimental conditions for each GSM
   for (i in 1:length(gsm)){
@@ -326,7 +336,7 @@ Groups_retrieval = function(gsm,GSE,path_GSE){
       },error=function(e){
           message("An error occurred while downloading file for",gsm[i])
           Sys.sleep(60)
-          
+
       })
     }
     if(j==3){
@@ -334,8 +344,8 @@ Groups_retrieval = function(gsm,GSE,path_GSE){
     }
     cond[[i]]= paste(gsmsingolo@header$title, gsmsingolo@header$characteristics_ch1)
     cond[[i]]<-gsub("[;:/%*()]"," ",cond[[i]])
-    
-    
+
+
     cond[[i]]= str_replace_all(cond[[i]], "\\+", " plus ")
     cond[[i]]= str_replace_all(cond[[i]], "\\-", " minus ")
     cond[[i]]= paste(cond[[i]], collapse='')
@@ -343,18 +353,18 @@ Groups_retrieval = function(gsm,GSE,path_GSE){
   soft_file<-dir(path_GSE,pattern=".soft")
   file.remove(paste0(path_GSE, "/",soft_file))
   cond<- unlist(cond)
-  
+
   # Computing distances between strings to cluster experimental conditions within the same group
   if(length(cond)>1){
     distances= adist(cond)
     rownames(distances) <- colnames(distances) <- cond
-    threshold<- min(distances[distances > 0])+1 
-    
+    threshold<- min(distances[distances > 0])+1
+
     hc <- hclust(as.dist(distances))
-    groups<- data.frame(cond,cutree(hc,h=threshold)) 
-    
+    groups<- data.frame(cond,cutree(hc,h=threshold))
+
   } else { groups= data.frame(cond[[1]], '1') }
-  
+
   colnames(groups)<- c("Condition", "Group")
   lis<-list(groups)
   return(lis)
@@ -362,7 +372,7 @@ Groups_retrieval = function(gsm,GSE,path_GSE){
 
 # Function that generates a file with the experimental conditions for each GSE and GSM
 do_file_for_group_control<-function(path_file){
-  
+
   tab1<-read.xlsx(file.path(path_file,"total_metadata_GSE.xlsx"))
   GSE<-tab1$GSE
   GPL<-tab1$GPL
@@ -372,18 +382,18 @@ do_file_for_group_control<-function(path_file){
   n_GSM<-tab1$n_GSM
   manufacturer<-tab1$manufacturer
   asm_name<-tab1$asm_name
-  
+
   GSM<-read.xlsx(file.path(path_file,"total_GSM.xlsx"))
-  
+
   tabella<-matrix(ncol =7 ,nrow = length(GSE))
-  
+
   n_GSM_tot<-c()
   insieme<-c()
   for(i in 1:ncol(GSM)){
     path_GSE<-file.path(path_file,GSE[i])
     #setwd(path_GSE)
     gsm<-GSM[1:n_GSM[i],i]
-    
+
     GSM_cond<-Groups_retrieval(gsm,GSE[i],path_GSE)[[1]]
     accession.number<-paste(gsm,collapse=",")
     groups<-paste(GSM_cond$Group,collapse = ",")
@@ -397,7 +407,7 @@ do_file_for_group_control<-function(path_file){
   }
   tabella<-data.frame(tabella)
   colnames(tabella)<-c("m.o.name",	"taxid",	"asm_name",	"GSE",	"Experimental_condition",	"groups",	"accession.number")
-  
+
   file_name<-paste(path_file,"gsm_condition.xlsx",sep="/")
   write.xlsx(tabella,file_name)
 
@@ -406,7 +416,7 @@ do_file_for_group_control<-function(path_file){
 # Function that downloads all files related to gene expression in the analyzed experiments
 metadata_retrieval<-function(path_file,file_MA,path_input,path_output){
  # setwd(path_file)
-  
+
   GSE<-c()
   asm_name<-c()
   if(length(file_MA)>1){
@@ -420,8 +430,8 @@ metadata_retrieval<-function(path_file,file_MA,path_input,path_output){
     GSE<-c(text$Accession)
     asm_name<-c(text$reference_genome)
   }
-  
-  
+
+
   assembly_summary<-fread(file.path(path_output,"assembly_summary.txt"), quote=F)
   taxid_species<-c()
   for(i in 1:length(asm_name)){
@@ -429,20 +439,23 @@ metadata_retrieval<-function(path_file,file_MA,path_input,path_output){
     taxid_species[i]<-assembly_summary$species_taxid[ind]
   }
   n_GSE<-length(GSE)
-  
+
   # Retrieve of metadata and expression files
   risultati1<-data_retrieval(GSE,path_file,asm_name,taxid_species)
-  # Create group file 
-  if(!file.exists("/output/output/tmp/microarray/gsm_condition.xlsx")){
-    risultati2<-do_file_for_group_control(path_file)
-  }else{
-    message("Success: Experimental Groups already defined!")
-  }
-  
-  
-  
-  cat('Before proceeding, check if the groups and replicas have been assigned correctly within file "gsm_condition.txt". 
+  metadata_path <- file.path(path_file, "total_metadata_GSE.xlsx")
+  groups_path <- file.path(path_file, "gsm_condition.xlsx")
+  if (file.exists(metadata_path)) {
+    if (!file.exists(groups_path)) {
+      risultati2<-do_file_for_group_control(path_file)
+    } else {
+      message("Success: Experimental Groups already defined!")
+    }
+
+    cat('Before proceeding, check if the groups and replicas have been assigned correctly within file "gsm_condition.xlsx".
 If not, please edit the file and overwrite it. When you are done, press enter:')
-  line <- readline()
+    line <- readline()
+  } else {
+    message("All requested Microarray GSEs were restored from valid full-tab checkpoints.")
+  }
 }
 
