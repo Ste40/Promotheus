@@ -43,13 +43,30 @@ nextflow run main.nf \
 
 **Outputs:** the output directory contains `results/final_table.xlsx`, `results/final_table.tsv`, `orthologous_genes.txt`, and execution reports under `pipeline_info/`. Check that `.promotheus-nextflow/output_validation.json` reports `"status": "pass"`.
 
-### Nextflow workflow DAG
+### Test with the bundled toy dataset
 
-![Promotheus Nextflow workflow](docs/images/promotheus-nextflow-dag.svg)
+After cloning the `nextflow` branch, run this from its repository root. The toy test requires **Nextflow, Java and Python 3**, but **no Docker or NCBI data downloads**:
 
-[SVG](docs/images/promotheus-nextflow-dag.svg) · [PNG](docs/images/promotheus-nextflow-dag.png) · [Workflow and resource guide](https://github.com/Ste40/Promotheus/blob/nextflow/docs/MODULAR_NEXTFLOW.md) · [Per-task performance report](https://github.com/Ste40/Promotheus/blob/nextflow/docs/TASK_PERFORMANCE.md)
+```bash
+nextflow run main.nf -profile test \
+  --input_dir tests/fixtures/toy_input \
+  --output_dir toy-results \
+  --asmcode ASM100001v1
+```
 
-Orthology parallelizes by genome; RNA-Seq download/alignment and Microarray analysis parallelize by GSE. Microarray analysis waits for orthology, and integration waits for every analysis branch. With operons enabled, downstream RNA-Seq analysis is grouped by organism. The diagram uses an nf-core-inspired visual style; Promotheus is an independent pipeline.
+The fixtures contain one synthetic Microarray GSE and one synthetic RNA-Seq GSE. The test runs the workflow with a mock analysis backend and produces a four-gene table. Confirm that the command exits successfully and `toy-results/.promotheus-nextflow/output_validation.json` reports `"status": "pass"`; the final workbook is `toy-results/results/final_table.xlsx`.
+
+This checks workflow orchestration and output validation, **not the biological algorithms in Docker**. To check reuse of completed tasks, repeat the same command with `-resume` while retaining `work/` and `.nextflow/`.
+
+For the full local regression suite, including parallel scheduling, failure recovery and cache invalidation:
+
+```bash
+bash tests/shell/test_all.sh
+```
+
+The suite additionally requires **R with the `openxlsx` package** and finishes with `PASS: all Promotheus Nextflow tests` on success.
+
+See the [Nextflow workflow guide](https://github.com/Ste40/Promotheus/blob/nextflow/docs/MODULAR_NEXTFLOW.md) for further details.
 
 ---
 
