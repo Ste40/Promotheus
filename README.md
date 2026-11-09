@@ -13,7 +13,47 @@ This project was carried out with the contribution of Stefano Quaranta, Debora D
 
 ---
 
-## Installation
+## Run with Nextflow (recommended)
+
+The modular Nextflow implementation is maintained separately on the [`nextflow` branch](https://github.com/Ste40/Promotheus/tree/nextflow). The `main` branch retains the original Docker pipeline; clone the Nextflow branch to use the commands below.
+
+Requirements: **Nextflow ≥23.10, Java ≥17, Python 3, and Docker installed and running**. Nextflow launches the containers automatically: you do not need to run `docker run` manually. The workflow uses a pinned `linux/amd64` image and the updated scripts in the repository; ARM computers use Docker emulation.
+
+```bash
+git clone --branch nextflow https://github.com/Ste40/Promotheus.git Promotheus-nextflow
+cd Promotheus-nextflow
+
+nextflow run main.nf \
+  -profile standard,balanced \
+  --input_dir /absolute/path/to/input \
+  --output_dir /absolute/path/to/output \
+  --asmcode ASM317683v1 \
+  --threads 8 --memory 20000 \
+  --task_cpus 2 --task_memory 8000 \
+  --orthology_cpus 1 --orthology_memory 3000 \
+  --max_orthology_parallel 6 \
+  --operons_detection false
+```
+
+**Inputs:** exactly two Excel workbooks in the input folder, with filenames containing `Microarray` and `RNA_Seq`. Use the tables produced by `GEO_Search.R`; do not include output workbooks. `--asmcode` selects the reference for orthology-based gene IDs; the input tables specify references for read alignment.
+
+**Resources:** the example allocates a total of 8 CPUs and 20,000 MB; make these available to Docker. The `balanced` profile reserves capacity for an RNA-Seq task and allows four simultaneous orthology comparisons with these settings. `--task_cpus` and `--task_memory` specify resources per scientific task. Use `-profile standard` to omit the reserve. Operon detection is disabled in this tested example; enable it with `--operons_detection true`.
+
+**Resume:** repeat the same command with `-resume`. Keep the `work/` and `.nextflow/` directories so completed tasks can be reused.
+
+**Outputs:** the output directory contains `results/final_table.xlsx`, `results/final_table.tsv`, `orthologous_genes.txt`, and execution reports under `pipeline_info/`. Check that `.promotheus-nextflow/output_validation.json` reports `"status": "pass"`.
+
+### Nextflow workflow DAG
+
+![Promotheus Nextflow workflow](docs/images/promotheus-nextflow-dag.svg)
+
+[SVG](docs/images/promotheus-nextflow-dag.svg) · [PNG](docs/images/promotheus-nextflow-dag.png) · [Workflow and resource guide](https://github.com/Ste40/Promotheus/blob/nextflow/docs/MODULAR_NEXTFLOW.md) · [Per-task performance report](https://github.com/Ste40/Promotheus/blob/nextflow/docs/TASK_PERFORMANCE.md)
+
+Orthology parallelizes by genome; RNA-Seq download/alignment and Microarray analysis parallelize by GSE. Microarray analysis waits for orthology, and integration waits for every analysis branch. With operons enabled, downstream RNA-Seq analysis is grouped by organism. The diagram uses an nf-core-inspired visual style; Promotheus is an independent pipeline.
+
+---
+
+## Original Docker pipeline: installation
 
 Promotheus is deployed via Docker. If you do not already have Docker installed, follow the instructions for docker installation at https://docs.docker.com/
 
