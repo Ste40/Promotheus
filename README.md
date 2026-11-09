@@ -2,12 +2,6 @@
 
 Promotheus retrieves and integrates bacterial Microarray and RNA-Seq data from NCBI to identify promoters with stable or variable expression. It harmonizes gene identifiers through orthology and produces expression, percentile, variability and promoter-sequence tables.
 
-## Workflow
-
-![Promotheus Nextflow workflow](docs/images/promotheus-nextflow-dag.svg)
-
-[SVG](docs/images/promotheus-nextflow-dag.svg) · [PNG](docs/images/promotheus-nextflow-dag.png). Colored paths distinguish genome harmonization, RNA-Seq and Microarray analysis; integration waits for all branches. This is a schematic of the implemented data dependencies, inspired by nf-core diagrams, not an nf-core affiliation.
-
 ## Run with Nextflow
 
 Requirements: **Nextflow ≥23.10, Java ≥17, Python 3 and Docker running**. The workflow launches Docker automatically and mounts the updated repository scripts into a pinned `linux/amd64` image; ARM machines use emulation.
@@ -65,15 +59,30 @@ The balanced profile reduced the observed download-to-alignment wait from 2 h 13
 
 A fresh two-comparison orthology benchmark on **4 November** took **8 min 46 s serially versus 4 min 58 s in parallel** (1.77×), with byte-identical results. This measures the orthology branch only; see the [method and results](docs/PERFORMANCE.md#controlled-comparison-4-november-2026).
 
-For a quick orchestration test without Docker or downloads:
+## Test with the bundled toy dataset
+
+After cloning the `nextflow` branch, run this from its repository root. The toy test requires **Nextflow, Java and Python 3**, but **no Docker or NCBI data downloads**:
 
 ```bash
 nextflow run main.nf -profile test \
   --input_dir tests/fixtures/toy_input \
-  --output_dir /tmp/promotheus-toy --asmcode ASM100001v1
+  --output_dir toy-results \
+  --asmcode ASM100001v1
 ```
 
-Run the regression suite with `bash tests/shell/test_all.sh` (requires Nextflow, Python 3 and R with `openxlsx`). See [validation details](docs/NEXTFLOW_EQUIVALENCE.md).
+The fixtures contain one synthetic Microarray GSE and one synthetic RNA-Seq GSE. The test runs the workflow with a mock analysis backend and produces a four-gene table. Confirm that the command exits successfully and `toy-results/.promotheus-nextflow/output_validation.json` reports `"status": "pass"`; the final workbook is `toy-results/results/final_table.xlsx`.
+
+This checks workflow orchestration and output validation, **not the biological algorithms in Docker**. To check reuse of completed tasks, repeat the same command with `-resume` while retaining `work/` and `.nextflow/`.
+
+For the full local regression suite, including parallel scheduling, failure recovery and cache invalidation:
+
+```bash
+bash tests/shell/test_all.sh
+```
+
+The suite additionally requires **R with the `openxlsx` package** and finishes with `PASS: all Promotheus Nextflow tests` on success.
+
+See [validation details](docs/NEXTFLOW_EQUIVALENCE.md) for Docker checks and limitations.
 
 ## Legacy execution and license
 
