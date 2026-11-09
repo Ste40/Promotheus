@@ -2,12 +2,18 @@
 
 Promotheus retrieves and integrates bacterial Microarray and RNA-Seq data from NCBI to identify promoters with stable or variable expression. It harmonizes gene identifiers through orthology and produces expression, percentile, variability and promoter-sequence tables.
 
+## Workflow
+
+![Promotheus Nextflow workflow](docs/images/promotheus-nextflow-dag.svg)
+
+[SVG](docs/images/promotheus-nextflow-dag.svg) · [PNG](docs/images/promotheus-nextflow-dag.png). Colored paths distinguish genome harmonization, RNA-Seq and Microarray analysis; integration waits for all branches. This is a schematic of the implemented data dependencies, inspired by nf-core diagrams, not an nf-core affiliation.
+
 ## Run with Nextflow
 
 Requirements: **Nextflow ≥23.10, Java ≥17, Python 3 and Docker running**. The workflow launches Docker automatically and mounts the updated repository scripts into a pinned `linux/amd64` image; ARM machines use emulation.
 
 ```bash
-git clone --branch codex/reimplement-pipeline-in-nextflow https://github.com/Ste40/Promotheus.git
+git clone --branch nextflow https://github.com/Ste40/Promotheus.git
 cd Promotheus
 
 nextflow run main.nf \

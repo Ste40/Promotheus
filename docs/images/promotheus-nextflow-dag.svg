@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1210" viewBox="0 0 1500 1210" role="img" aria-labelledby="title desc">
+<title id="title">Promotheus — Nextflow workflow</title><desc id="desc">Validated Excel inputs branch into parallel orthology and RNA-Seq processing. Genome comparisons merge before Microarray analysis. Integration waits for orthology, Microarray and RNA-Seq results, then output validation completes the workflow.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/></marker></defs>
+<rect width="1500" height="1210" fill="#fff"/>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#203247}.title{font-size:40px;font-weight:700}.sub{font-size:19px;fill:#5c6b7d}.node{font-size:22px;font-weight:700}.code{font-family:monospace;font-size:17px}.small{font-size:17px;fill:#5c6b7d}.badge{font-size:15px;font-weight:700;letter-spacing:1px}</style>
+<text x="60" y="64" class="title" text-anchor="start">Promotheus</text>
+<text x="62" y="99" class="sub" text-anchor="start">NEXTFLOW  /  BACTERIAL TRANSCRIPTOMICS</text>
+<path d="M820 65 h30" stroke="#13977c" stroke-width="6"/>
+<text x="862" y="72" class="sub" text-anchor="start">Orthology</text>
+<path d="M1010 65 h30" stroke="#307bc4" stroke-width="6"/>
+<text x="1052" y="72" class="sub" text-anchor="start">RNA-Seq</text>
+<path d="M1200 65 h30" stroke="#855ab6" stroke-width="6"/>
+<text x="1242" y="72" class="sub" text-anchor="start">Microarray</text>
+<rect x="135" y="275" width="565" height="452" rx="18" fill="#f0f8f5" stroke="none" stroke-width="2"/>
+<rect x="800" y="275" width="565" height="452" rx="18" fill="#f0f6fc" stroke="none" stroke-width="2"/>
+<text x="160" y="309" class="badge" text-anchor="start">01  GENOME HARMONIZATION</text>
+<text x="825" y="309" class="badge" text-anchor="start">02  RNA-SEQ PROCESSING</text>
+<path d="M750 235 V260 H410 V335" fill="none" stroke="#13977c" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M750 235 V260 H1090 V335" fill="none" stroke="#307bc4" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M410 427 V465" fill="none" stroke="#13977c" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M410 557 V595" fill="none" stroke="#13977c" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M1090 427 V465" fill="none" stroke="#307bc4" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M1090 557 V595" fill="none" stroke="#307bc4" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M410 687 V755" fill="none" stroke="#855ab6" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M635 641 H750 V885" fill="none" stroke="#13977c" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M1090 687 V741 H1400 V855 H850 V885" fill="none" stroke="#307bc4" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M410 847 V865 H650 V885" fill="none" stroke="#855ab6" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<path d="M525 195 H80 V801 H185" fill="none" stroke="#586879" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)" stroke-dasharray="7 8"/>
+<text x="94" y="516" class="small" text-anchor="start">GSE</text>
+<text x="94" y="539" class="small" text-anchor="start">shards</text>
+<path d="M750 977 V1005" fill="none" stroke="#d68b24" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/>
+<rect x="525" y="143" width="450" height="92" rx="18" fill="#fff" stroke="#586879" stroke-width="2"/>
+<circle cx="548" cy="170" r="7" fill="#586879"/>
+<text x="567" y="176" class="node" text-anchor="start">Validate &amp; split inputs</text>
+<text x="547" y="202" class="code" text-anchor="start">VALIDATE_INPUTS</text>
+<text x="547" y="223" class="small" text-anchor="start">Microarray + RNA_Seq workbooks</text>
+<text x="750" y="131" class="small" text-anchor="middle">INPUT  •  2 XLSX tables + assembly reference</text>
+<rect x="185" y="335" width="450" height="92" rx="18" fill="#fff" stroke="#13977c" stroke-width="2"/>
+<circle cx="208" cy="362" r="7" fill="#13977c"/>
+<text x="227" y="368" class="node" text-anchor="start">Prepare genomes &amp; proteomes</text>
+<text x="207" y="394" class="code" text-anchor="start">ORTHOLOGY_PREPARE</text>
+<text x="207" y="415" class="small" text-anchor="start">RefSeq retrieval or archived genome snapshot</text>
+<rect x="185" y="465" width="450" height="92" rx="18" fill="#fff" stroke="#13977c" stroke-width="2"/>
+<circle cx="208" cy="492" r="7" fill="#13977c"/>
+<text x="227" y="498" class="node" text-anchor="start">Compare reference × genome</text>
+<text x="207" y="524" class="code" text-anchor="start">ORTHOLOGY_PAIR</text>
+<text x="207" y="545" class="small" text-anchor="start">Parallel fan-out: one task per other genome</text>
+<rect x="185" y="595" width="450" height="92" rx="18" fill="#fff" stroke="#13977c" stroke-width="2"/>
+<circle cx="208" cy="622" r="7" fill="#13977c"/>
+<text x="227" y="628" class="node" text-anchor="start">Merge gene mappings</text>
+<text x="207" y="654" class="code" text-anchor="start">ORTHOLOGY_MERGE</text>
+<text x="207" y="675" class="small" text-anchor="start">Barrier: wait for every genome comparison</text>
+<rect x="865" y="335" width="450" height="92" rx="18" fill="#fff" stroke="#307bc4" stroke-width="2"/>
+<circle cx="888" cy="362" r="7" fill="#307bc4"/>
+<text x="907" y="368" class="node" text-anchor="start">Retrieve reads &amp; reference</text>
+<text x="887" y="394" class="code" text-anchor="start">RNA_DOWNLOAD_GSE</text>
+<text x="887" y="415" class="small" text-anchor="start">Parallel fan-out: one task per GSE</text>
+<rect x="865" y="465" width="450" height="92" rx="18" fill="#fff" stroke="#307bc4" stroke-width="2"/>
+<circle cx="888" cy="492" r="7" fill="#307bc4"/>
+<text x="907" y="498" class="node" text-anchor="start">Align reads &amp; prepare BAMs</text>
+<text x="887" y="524" class="code" text-anchor="start">RNA_ALIGN_GSE</text>
+<text x="887" y="545" class="small" text-anchor="start">One task per GSE; independent of orthology</text>
+<rect x="865" y="595" width="450" height="92" rx="18" fill="#fff" stroke="#307bc4" stroke-width="2"/>
+<circle cx="888" cy="622" r="7" fill="#307bc4"/>
+<text x="907" y="628" class="node" text-anchor="start">Analyze expression / operons</text>
+<text x="887" y="654" class="code" text-anchor="start">RNA_ANALYZE</text>
+<text x="887" y="675" class="small" text-anchor="start">Per GSE, or grouped by organism with operons</text>
+<rect x="185" y="755" width="450" height="92" rx="18" fill="#fff" stroke="#855ab6" stroke-width="2"/>
+<circle cx="208" cy="782" r="7" fill="#855ab6"/>
+<text x="227" y="788" class="node" text-anchor="start">Analyze Microarray datasets</text>
+<text x="207" y="814" class="code" text-anchor="start">MICROARRAY_GSE</text>
+<text x="207" y="835" class="small" text-anchor="start">One task per GSE; requires merged orthology</text>
+<text x="855" y="765" class="node" text-anchor="start">Concurrency &amp; restart</text>
+<text x="855" y="796" class="small" text-anchor="start">Independent genome and GSE tasks can overlap.</text>
+<text x="855" y="824" class="small" text-anchor="start">Nextflow caches completed tasks for -resume.</text>
+<rect x="525" y="885" width="450" height="92" rx="18" fill="#fff" stroke="#d68b24" stroke-width="2"/>
+<circle cx="548" cy="912" r="7" fill="#d68b24"/>
+<text x="567" y="918" class="node" text-anchor="start">Integrate all experiments</text>
+<text x="547" y="944" class="code" text-anchor="start">INTEGRATE_RESULTS</text>
+<text x="547" y="965" class="small" text-anchor="start">Wait for orthology + all Microarray/RNA results</text>
+<rect x="525" y="1005" width="450" height="92" rx="18" fill="#fff" stroke="#586879" stroke-width="2"/>
+<circle cx="548" cy="1032" r="7" fill="#586879"/>
+<text x="567" y="1038" class="node" text-anchor="start">Validate final results</text>
+<text x="547" y="1064" class="code" text-anchor="start">VERIFY_OUTPUTS</text>
+<text x="547" y="1085" class="small" text-anchor="start">Workbook integrity and coverage of every GSE</text>
+<text x="750" y="1130" class="sub" text-anchor="middle">OUTPUT  •  final_table.xlsx / .tsv  •  orthologous_genes.txt</text>
+<text x="750" y="1158" class="small" text-anchor="middle">Execution reports, timeline and task trace are generated alongside the workflow.</text>
+<text x="60" y="1190" class="small" text-anchor="start">Solid lines: scientific data dependencies   ·   Dashed: validated Microarray input shards</text>
+</svg>

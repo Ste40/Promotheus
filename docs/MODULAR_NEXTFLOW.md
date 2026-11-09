@@ -5,6 +5,8 @@ wrapper is preserved as `main_legacy.nf`. Both use the existing R scientific
 functions and pinned image; the new workflow adds task-local adapters in
 `bin/run_stage.R` and `bin/run_modular_stage.py`.
 
+![Promotheus Nextflow workflow](images/promotheus-nextflow-dag.svg)
+
 ```mermaid
 flowchart TD
     V[VALIDATE_INPUTS: validate and split workbook rows]
