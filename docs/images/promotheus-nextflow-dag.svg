@@ -1,81 +1,212 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="820" viewBox="0 0 2000 820" role="img" aria-labelledby="title desc">
-<title id="title">Promotheus Nextflow metro map</title><desc id="desc">Validated inputs feed independent orthology and RNA-Seq routes. Merged orthology also feeds Microarray analysis. All routes converge at integration, followed by output validation. Rockhopper is optional within RNA_ANALYZE.</desc>
-<rect width="2000" height="820" fill="#282828"/>
-<style>text{font-family:Arial,Helvetica,sans-serif;fill:#ededed}.title{font-size:38px;font-weight:700}.section{font-size:20px;font-weight:700;fill:#ccc}.label{font-size:20px;font-weight:700}.detail{font-size:16px;fill:#bdbdbd}.code{font-family:monospace;font-size:14px;fill:#aaa}</style>
-<text x="35" y="55" class="title" text-anchor="start">Promotheus / Nextflow</text>
-<text x="1960" y="53" class="detail" text-anchor="end">BACTERIAL TRANSCRIPTOMICS</text>
-<rect x="30" y="320" width="370" height="210" rx="12" fill="#353535" stroke="#515151"/>
-<text x="30" y="305" class="section" text-anchor="start">1  Inputs</text>
-<rect x="445" y="130" width="920" height="170" rx="12" fill="#353535" stroke="#515151"/>
-<text x="445" y="115" class="section" text-anchor="start">2  Orthology · parallel by genome</text>
-<rect x="445" y="350" width="920" height="150" rx="12" fill="#353535" stroke="#515151"/>
-<text x="445" y="335" class="section" text-anchor="start">3  Microarray · parallel by GSE</text>
-<rect x="445" y="550" width="920" height="170" rx="12" fill="#353535" stroke="#515151"/>
-<text x="445" y="535" class="section" text-anchor="start">4  RNA-Seq · parallel download / alignment by GSE</text>
-<rect x="1420" y="320" width="550" height="210" rx="12" fill="#353535" stroke="#515151"/>
-<text x="1420" y="305" class="section" text-anchor="start">5  Integration &amp; validation</text>
-<path d="M85 415 H340" fill="none" stroke="#bdbdbd" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M340 415 V235 Q340 210 365 210 H1300" fill="none" stroke="#26aada" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M340 415 V610 Q340 635 365 635 H1300" fill="none" stroke="#ff9a24" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M340 415 H755" fill="none" stroke="#bdbdbd" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="8 7"/>
-<path d="M1170 210 H1310 Q1340 210 1340 240 V330 Q1340 340 1315 340 H730 Q705 340 705 365 V410 H1300" fill="none" stroke="#52c878" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M1190 210 H1380 Q1400 210 1400 230 V389 Q1400 405 1420 405 H1490" fill="none" stroke="#26aada" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M1300 410 H1490" fill="none" stroke="#52c878" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M1300 635 H1370 Q1390 635 1390 615 V435 Q1390 420 1410 420 H1490" fill="none" stroke="#ff9a24" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M1490 405 H1530" fill="none" stroke="#26aada" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M1490 410 H1530" fill="none" stroke="#52c878" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M1490 420 H1530" fill="none" stroke="#ff9a24" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M1530 410 H1900" fill="none" stroke="#c78cec" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<rect x="94" y="402" width="12" height="26" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
-<text x="100" y="384" class="label" text-anchor="middle">XLSX × 2</text>
-<text x="100" y="484" class="detail" text-anchor="middle">GEO datasets</text>
-<rect x="254" y="402" width="12" height="26" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
-<text x="260" y="384" class="label" text-anchor="middle">Validate &amp; split</text>
-<text x="260" y="458" class="code" text-anchor="middle">VALIDATE_INPUTS</text>
-<rect x="569" y="197" width="12" height="26" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
-<text x="575" y="179" class="label" text-anchor="middle">Genomes &amp; proteomes</text>
-<text x="575" y="253" class="code" text-anchor="middle">ORTHOLOGY_PREPARE</text>
-<text x="575" y="279" class="detail" text-anchor="middle">RefSeq / archived genomes</text>
-<rect x="864" y="197" width="12" height="26" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
-<text x="870" y="179" class="label" text-anchor="middle">OrthoFinder</text>
-<text x="870" y="253" class="code" text-anchor="middle">ORTHOLOGY_PAIR</text>
-<text x="870" y="279" class="detail" text-anchor="middle">Reference × each genome</text>
-<rect x="1164" y="197" width="12" height="26" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
-<text x="1170" y="179" class="label" text-anchor="middle">Merge gene IDs</text>
-<text x="1170" y="253" class="code" text-anchor="middle">ORTHOLOGY_MERGE</text>
-<text x="1170" y="279" class="detail" text-anchor="middle">Wait for all comparisons</text>
-<rect x="924" y="397" width="12" height="26" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
-<text x="930" y="379" class="label" text-anchor="middle">Chip &amp; expression analysis</text>
-<text x="930" y="453" class="code" text-anchor="middle">MICROARRAY_GSE</text>
-<text x="930" y="479" class="detail" text-anchor="middle">Requires merged orthology</text>
-<rect x="584" y="622" width="12" height="26" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
-<text x="590" y="604" class="label" text-anchor="middle">Reads &amp; reference</text>
-<text x="590" y="678" class="code" text-anchor="middle">RNA_DOWNLOAD_GSE</text>
-<rect x="864" y="622" width="12" height="26" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
-<text x="870" y="604" class="label" text-anchor="middle">Rsubread alignment</text>
-<text x="870" y="678" class="code" text-anchor="middle">RNA_ALIGN_GSE</text>
-<rect x="1164" y="622" width="12" height="26" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
-<text x="1170" y="604" class="label" text-anchor="middle">Counts &amp; expression</text>
-<text x="1170" y="678" class="code" text-anchor="middle">RNA_ANALYZE</text>
-<text x="1170" y="704" class="detail" text-anchor="middle">featureCounts · DESeq2</text>
-<text x="1170" y="586" class="detail" text-anchor="middle">+ Rockhopper (optional)</text>
-<rect x="1524" y="397" width="12" height="26" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
-<text x="1530" y="379" class="label" text-anchor="middle">Integrate</text>
-<text x="1530" y="453" class="code" text-anchor="middle">INTEGRATE_RESULTS</text>
-<rect x="1744" y="397" width="12" height="26" rx="6" fill="#fff" stroke="#222" stroke-width="2"/>
-<text x="1750" y="379" class="label" text-anchor="middle">Verify</text>
-<text x="1750" y="453" class="code" text-anchor="middle">VERIFY_OUTPUTS</text>
-<path d="M1880 388 H1905 L1918 401 V438 H1880 Z" fill="#eee"/>
-<text x="1899" y="421" class="code" text-anchor="middle">TSV</text>
-<text x="1899" y="471" class="detail" text-anchor="middle">XLSX / TSV</text>
-<path d="M45 770 h32" fill="none" stroke="#26aada" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<text x="90" y="776" class="detail" text-anchor="start">Orthology</text>
-<path d="M250 770 h32" fill="none" stroke="#52c878" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<text x="295" y="776" class="detail" text-anchor="start">Microarray</text>
-<path d="M465 770 h32" fill="none" stroke="#ff9a24" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<text x="510" y="776" class="detail" text-anchor="start">RNA-Seq</text>
-<path d="M670 770 h32" fill="none" stroke="#c78cec" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-<text x="715" y="776" class="detail" text-anchor="start">Final results</text>
-<text x="1020" y="765" class="detail" text-anchor="start">Operons enabled: RNA_ANALYZE groups GSEs by organism.</text>
-<text x="1020" y="791" class="detail" text-anchor="start">Stations = Nextflow processes; dashed line = validated input shards.</text>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: Promotheus Pages: 1 -->
+<svg width="2207pt" height="459pt"
+ viewBox="0.00 0.00 2207.00 459.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(36 423)">
+<title>Promotheus</title>
+<polygon fill="#24262b" stroke="transparent" points="-36,36 -36,-423 2171,-423 2171,36 -36,36"/>
+<text text-anchor="middle" x="1067.5" y="-363" font-family="DejaVu Sans" font-size="25.00" fill="#f4f4f4">Promotheus / Nextflow</text>
+<g id="clust1" class="cluster">
+<title>cluster_orth</title>
+<path fill="#29343b" stroke="#427281" d="M463.5,-222C463.5,-222 1134,-222 1134,-222 1140,-222 1146,-228 1146,-234 1146,-234 1146,-331 1146,-331 1146,-337 1140,-343 1134,-343 1134,-343 463.5,-343 463.5,-343 457.5,-343 451.5,-337 451.5,-331 451.5,-331 451.5,-234 451.5,-234 451.5,-228 457.5,-222 463.5,-222"/>
+<text text-anchor="middle" x="798.75" y="-325.4" font-family="DejaVu Sans" font-size="17.00" fill="#f4f4f4">01 &#160;ORTHOLOGY · parallel by genome</text>
+</g>
+<g id="clust2" class="cluster">
+<title>cluster_ma</title>
+<path fill="#2c3830" stroke="#49765a" d="M1178,-143C1178,-143 1459,-143 1459,-143 1465,-143 1471,-149 1471,-155 1471,-155 1471,-236 1471,-236 1471,-242 1465,-248 1459,-248 1459,-248 1178,-248 1178,-248 1172,-248 1166,-242 1166,-236 1166,-236 1166,-155 1166,-155 1166,-149 1172,-143 1178,-143"/>
+<text text-anchor="middle" x="1318.5" y="-230.4" font-family="DejaVu Sans" font-size="17.00" fill="#f4f4f4">02 &#160;MICROARRAY · parallel by GSE</text>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_rna</title>
+<path fill="#393229" stroke="#8c683b" d="M461,-8C461,-8 1413.5,-8 1413.5,-8 1419.5,-8 1425.5,-14 1425.5,-20 1425.5,-20 1425.5,-123 1425.5,-123 1425.5,-129 1419.5,-135 1413.5,-135 1413.5,-135 461,-135 461,-135 455,-135 449,-129 449,-123 449,-123 449,-20 449,-20 449,-14 455,-8 461,-8"/>
+<text text-anchor="middle" x="937.25" y="-117.4" font-family="DejaVu Sans" font-size="17.00" fill="#f4f4f4">03 &#160;RNA&#45;SEQ</text>
+</g>
+<g id="clust4" class="cluster">
+<title>cluster_results</title>
+<path fill="#342e3d" stroke="#78628e" d="M1503,-139C1503,-139 2115,-139 2115,-139 2121,-139 2127,-145 2127,-151 2127,-151 2127,-240 2127,-240 2127,-246 2121,-252 2115,-252 2115,-252 1503,-252 1503,-252 1497,-252 1491,-246 1491,-240 1491,-240 1491,-151 1491,-151 1491,-145 1497,-139 1503,-139"/>
+<text text-anchor="middle" x="1809" y="-234.4" font-family="DejaVu Sans" font-size="17.00" fill="#f4f4f4">04 &#160;INTEGRATION &amp; VALIDATION</text>
+</g>
+<!-- input -->
+<g id="node1" class="node">
+<title>input</title>
+<polygon fill="#33363d" stroke="#747984" stroke-width="1.5" points="228,-192 225,-196 204,-196 201,-192 0,-192 0,-138 228,-138 228,-192"/>
+<text text-anchor="middle" x="114" y="-168.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">INPUT</text>
+<text text-anchor="middle" x="114" y="-153.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Microarray + RNA&#45;Seq XLSX</text>
+</g>
+<!-- validate -->
+<g id="node2" class="node">
+<title>validate</title>
+<path fill="#33363d" stroke="#747984" stroke-width="1.5" d="M409,-192C409,-192 276,-192 276,-192 270,-192 264,-186 264,-180 264,-180 264,-150 264,-150 264,-144 270,-138 276,-138 276,-138 409,-138 409,-138 415,-138 421,-144 421,-150 421,-150 421,-180 421,-180 421,-186 415,-192 409,-192"/>
+<text text-anchor="middle" x="342.5" y="-168.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Validate &amp; split</text>
+<text text-anchor="middle" x="342.5" y="-153.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">VALIDATE_INPUTS</text>
+</g>
+<!-- input&#45;&gt;validate -->
+<g id="edge7" class="edge">
+<title>input&#45;&gt;validate</title>
+<path fill="none" stroke="#aab0ba" stroke-width="3" d="M228.25,-165C237.86,-165 247.46,-165 256.79,-165"/>
+<polygon fill="#aab0ba" stroke="#aab0ba" stroke-width="3" points="256.87,-167.45 263.87,-165 256.87,-162.55 256.87,-167.45"/>
+</g>
+<!-- prep -->
+<g id="node3" class="node">
+<title>prep</title>
+<path fill="#33363d" stroke="#26aada" stroke-width="1.5" d="M639.5,-290C639.5,-290 471.5,-290 471.5,-290 465.5,-290 459.5,-284 459.5,-278 459.5,-278 459.5,-248 459.5,-248 459.5,-242 465.5,-236 471.5,-236 471.5,-236 639.5,-236 639.5,-236 645.5,-236 651.5,-242 651.5,-248 651.5,-248 651.5,-278 651.5,-278 651.5,-284 645.5,-290 639.5,-290"/>
+<text text-anchor="middle" x="555.5" y="-266.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Genomes &amp; proteomes</text>
+<text text-anchor="middle" x="555.5" y="-251.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">ORTHOLOGY_PREPARE</text>
+</g>
+<!-- validate&#45;&gt;prep -->
+<g id="edge8" class="edge">
+<title>validate&#45;&gt;prep</title>
+<path fill="none" stroke="#26aada" stroke-width="3" d="M401.72,-192.04C428.93,-204.68 461.44,-219.78 489.46,-232.79"/>
+<polygon fill="#26aada" stroke="#26aada" stroke-width="3" points="488.73,-235.15 496.11,-235.88 490.79,-230.71 488.73,-235.15"/>
+</g>
+<!-- ma -->
+<g id="node6" class="node">
+<title>ma</title>
+<path fill="#33363d" stroke="#52c878" stroke-width="1.5" d="M1416,-209C1416,-209 1220,-209 1220,-209 1214,-209 1208,-203 1208,-197 1208,-197 1208,-167 1208,-167 1208,-161 1214,-155 1220,-155 1220,-155 1416,-155 1416,-155 1422,-155 1428,-161 1428,-167 1428,-167 1428,-197 1428,-197 1428,-203 1422,-209 1416,-209"/>
+<path fill="none" stroke="#52c878" stroke-width="1.5" d="M1420,-213C1420,-213 1216,-213 1216,-213 1210,-213 1204,-207 1204,-201 1204,-201 1204,-163 1204,-163 1204,-157 1210,-151 1216,-151 1216,-151 1420,-151 1420,-151 1426,-151 1432,-157 1432,-163 1432,-163 1432,-201 1432,-201 1432,-207 1426,-213 1420,-213"/>
+<text text-anchor="middle" x="1318" y="-185.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Chip &amp; expression analysis</text>
+<text text-anchor="middle" x="1318" y="-170.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">MICROARRAY_GSE</text>
+</g>
+<!-- validate&#45;&gt;ma -->
+<g id="edge10" class="edge">
+<title>validate&#45;&gt;ma</title>
+<path fill="none" stroke="#52c878" stroke-width="3" stroke-dasharray="5,2" d="M421.11,-166.36C590.5,-169.31 994.34,-176.37 1196.86,-179.9"/>
+<polygon fill="#52c878" stroke="#52c878" stroke-width="3" points="1196.94,-182.35 1203.98,-180.03 1197.03,-177.45 1196.94,-182.35"/>
+</g>
+<!-- download -->
+<g id="node7" class="node">
+<title>download</title>
+<path fill="#33363d" stroke="#ff9a24" stroke-width="1.5" d="M638,-94.5C638,-94.5 473,-94.5 473,-94.5 467,-94.5 461,-88.5 461,-82.5 461,-82.5 461,-37.5 461,-37.5 461,-31.5 467,-25.5 473,-25.5 473,-25.5 638,-25.5 638,-25.5 644,-25.5 650,-31.5 650,-37.5 650,-37.5 650,-82.5 650,-82.5 650,-88.5 644,-94.5 638,-94.5"/>
+<path fill="none" stroke="#ff9a24" stroke-width="1.5" d="M642,-98.5C642,-98.5 469,-98.5 469,-98.5 463,-98.5 457,-92.5 457,-86.5 457,-86.5 457,-33.5 457,-33.5 457,-27.5 463,-21.5 469,-21.5 469,-21.5 642,-21.5 642,-21.5 648,-21.5 654,-27.5 654,-33.5 654,-33.5 654,-86.5 654,-86.5 654,-92.5 648,-98.5 642,-98.5"/>
+<text text-anchor="middle" x="555.5" y="-71.3" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Reads &amp; reference</text>
+<text text-anchor="middle" x="555.5" y="-56.3" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">RNA_DOWNLOAD_GSE</text>
+<text text-anchor="middle" x="555.5" y="-41.3" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Parallel by GSE</text>
+</g>
+<!-- validate&#45;&gt;download -->
+<g id="edge9" class="edge">
+<title>validate&#45;&gt;download</title>
+<path fill="none" stroke="#ff9a24" stroke-width="3" d="M397.84,-137.96C419.92,-126.97 445.95,-114.02 470.38,-101.86"/>
+<polygon fill="#ff9a24" stroke="#ff9a24" stroke-width="3" points="471.71,-103.94 476.88,-98.62 469.53,-99.55 471.71,-103.94"/>
+</g>
+<!-- pair -->
+<g id="node4" class="node">
+<title>pair</title>
+<path fill="#33363d" stroke="#26aada" stroke-width="1.5" d="M898,-303.5C898,-303.5 706,-303.5 706,-303.5 700,-303.5 694,-297.5 694,-291.5 694,-291.5 694,-246.5 694,-246.5 694,-240.5 700,-234.5 706,-234.5 706,-234.5 898,-234.5 898,-234.5 904,-234.5 910,-240.5 910,-246.5 910,-246.5 910,-291.5 910,-291.5 910,-297.5 904,-303.5 898,-303.5"/>
+<path fill="none" stroke="#26aada" stroke-width="1.5" d="M902,-307.5C902,-307.5 702,-307.5 702,-307.5 696,-307.5 690,-301.5 690,-295.5 690,-295.5 690,-242.5 690,-242.5 690,-236.5 696,-230.5 702,-230.5 702,-230.5 902,-230.5 902,-230.5 908,-230.5 914,-236.5 914,-242.5 914,-242.5 914,-295.5 914,-295.5 914,-301.5 908,-307.5 902,-307.5"/>
+<text text-anchor="middle" x="802" y="-280.3" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">OrthoFinder</text>
+<text text-anchor="middle" x="802" y="-265.3" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">ORTHOLOGY_PAIR</text>
+<text text-anchor="middle" x="802" y="-250.3" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Reference × each genome</text>
+</g>
+<!-- prep&#45;&gt;pair -->
+<g id="edge1" class="edge">
+<title>prep&#45;&gt;pair</title>
+<path fill="none" stroke="#26aada" stroke-width="3" d="M651.73,-265.34C661.86,-265.59 672.25,-265.84 682.61,-266.09"/>
+<polygon fill="#26aada" stroke="#26aada" stroke-width="3" points="682.71,-268.55 689.77,-266.27 682.83,-263.65 682.71,-268.55"/>
+</g>
+<!-- merge -->
+<g id="node5" class="node">
+<title>merge</title>
+<path fill="#33363d" stroke="#26aada" stroke-width="1.5" d="M1126,-296C1126,-296 962,-296 962,-296 956,-296 950,-290 950,-284 950,-284 950,-254 950,-254 950,-248 956,-242 962,-242 962,-242 1126,-242 1126,-242 1132,-242 1138,-248 1138,-254 1138,-254 1138,-284 1138,-284 1138,-290 1132,-296 1126,-296"/>
+<text text-anchor="middle" x="1044" y="-272.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Merge gene mappings</text>
+<text text-anchor="middle" x="1044" y="-257.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">ORTHOLOGY_MERGE</text>
+</g>
+<!-- pair&#45;&gt;merge -->
+<g id="edge2" class="edge">
+<title>pair&#45;&gt;merge</title>
+<path fill="none" stroke="#26aada" stroke-width="3" d="M914.22,-269C923.7,-269 933.25,-269 942.63,-269"/>
+<polygon fill="#26aada" stroke="#26aada" stroke-width="3" points="942.78,-271.45 949.78,-269 942.78,-266.55 942.78,-271.45"/>
+</g>
+<!-- merge&#45;&gt;ma -->
+<g id="edge11" class="edge">
+<title>merge&#45;&gt;ma</title>
+<path fill="none" stroke="#52c878" stroke-width="3" d="M1129.57,-241.95C1155.88,-233.53 1185.2,-224.16 1212.69,-215.36"/>
+<polygon fill="#52c878" stroke="#52c878" stroke-width="3" points="1213.72,-217.61 1219.64,-213.14 1212.23,-212.94 1213.72,-217.61"/>
+</g>
+<!-- integrate -->
+<g id="node10" class="node">
+<title>integrate</title>
+<path fill="#33363d" stroke="#c78cec" stroke-width="1.5" d="M1675,-209C1675,-209 1511,-209 1511,-209 1505,-209 1499,-203 1499,-197 1499,-197 1499,-167 1499,-167 1499,-161 1505,-155 1511,-155 1511,-155 1675,-155 1675,-155 1681,-155 1687,-161 1687,-167 1687,-167 1687,-197 1687,-197 1687,-203 1681,-209 1675,-209"/>
+<text text-anchor="middle" x="1593" y="-185.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Integrate experiments</text>
+<text text-anchor="middle" x="1593" y="-170.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">INTEGRATE_RESULTS</text>
+</g>
+<!-- merge&#45;&gt;integrate -->
+<g id="edge12" class="edge">
+<title>merge&#45;&gt;integrate</title>
+<path fill="none" stroke="#26aada" stroke-width="3" d="M1138.22,-265.28C1263.6,-260.28 1471,-252 1471,-252 1471,-252 1506.3,-231.58 1538.77,-212.79"/>
+<polygon fill="#26aada" stroke="#26aada" stroke-width="3" points="1540.39,-214.69 1545.22,-209.06 1537.93,-210.45 1540.39,-214.69"/>
+</g>
+<!-- ma&#45;&gt;integrate -->
+<g id="edge13" class="edge">
+<title>ma&#45;&gt;integrate</title>
+<path fill="none" stroke="#52c878" stroke-width="3" d="M1432.01,-182C1451.74,-182 1472.14,-182 1491.5,-182"/>
+<polygon fill="#52c878" stroke="#52c878" stroke-width="3" points="1491.58,-184.45 1498.58,-182 1491.58,-179.55 1491.58,-184.45"/>
+</g>
+<!-- align -->
+<g id="node8" class="node">
+<title>align</title>
+<path fill="#33363d" stroke="#ff9a24" stroke-width="1.5" d="M876.5,-94.5C876.5,-94.5 727.5,-94.5 727.5,-94.5 721.5,-94.5 715.5,-88.5 715.5,-82.5 715.5,-82.5 715.5,-37.5 715.5,-37.5 715.5,-31.5 721.5,-25.5 727.5,-25.5 727.5,-25.5 876.5,-25.5 876.5,-25.5 882.5,-25.5 888.5,-31.5 888.5,-37.5 888.5,-37.5 888.5,-82.5 888.5,-82.5 888.5,-88.5 882.5,-94.5 876.5,-94.5"/>
+<path fill="none" stroke="#ff9a24" stroke-width="1.5" d="M880.5,-98.5C880.5,-98.5 723.5,-98.5 723.5,-98.5 717.5,-98.5 711.5,-92.5 711.5,-86.5 711.5,-86.5 711.5,-33.5 711.5,-33.5 711.5,-27.5 717.5,-21.5 723.5,-21.5 723.5,-21.5 880.5,-21.5 880.5,-21.5 886.5,-21.5 892.5,-27.5 892.5,-33.5 892.5,-33.5 892.5,-86.5 892.5,-86.5 892.5,-92.5 886.5,-98.5 880.5,-98.5"/>
+<text text-anchor="middle" x="802" y="-71.3" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Rsubread alignment</text>
+<text text-anchor="middle" x="802" y="-56.3" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">RNA_ALIGN_GSE</text>
+<text text-anchor="middle" x="802" y="-41.3" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Parallel by GSE</text>
+</g>
+<!-- download&#45;&gt;align -->
+<g id="edge3" class="edge">
+<title>download&#45;&gt;align</title>
+<path fill="none" stroke="#ff9a24" stroke-width="3" d="M654.19,-60C670.71,-60 687.87,-60 704.37,-60"/>
+<polygon fill="#ff9a24" stroke="#ff9a24" stroke-width="3" points="704.39,-62.45 711.39,-60 704.39,-57.55 704.39,-62.45"/>
+</g>
+<!-- analyze -->
+<g id="node9" class="node">
+<title>analyze</title>
+<path fill="#33363d" stroke="#ff9a24" stroke-width="1.5" d="M1405.5,-100C1405.5,-100 1230.5,-100 1230.5,-100 1224.5,-100 1218.5,-94 1218.5,-88 1218.5,-88 1218.5,-28 1218.5,-28 1218.5,-22 1224.5,-16 1230.5,-16 1230.5,-16 1405.5,-16 1405.5,-16 1411.5,-16 1417.5,-22 1417.5,-28 1417.5,-28 1417.5,-88 1417.5,-88 1417.5,-94 1411.5,-100 1405.5,-100"/>
+<text text-anchor="middle" x="1318" y="-76.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Counts &amp; expression</text>
+<text text-anchor="middle" x="1318" y="-61.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">RNA_ANALYZE</text>
+<text text-anchor="middle" x="1318" y="-46.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">featureCounts · DESeq2</text>
+<text text-anchor="middle" x="1318" y="-31.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Rockhopper (optional)</text>
+</g>
+<!-- align&#45;&gt;analyze -->
+<g id="edge4" class="edge">
+<title>align&#45;&gt;analyze</title>
+<path fill="none" stroke="#ff9a24" stroke-width="3" d="M892.53,-59.65C981.25,-59.31 1117.14,-58.78 1211.16,-58.41"/>
+<polygon fill="#ff9a24" stroke="#ff9a24" stroke-width="3" points="1211.43,-60.86 1218.42,-58.38 1211.41,-55.96 1211.43,-60.86"/>
+</g>
+<!-- analyze&#45;&gt;integrate -->
+<g id="edge14" class="edge">
+<title>analyze&#45;&gt;integrate</title>
+<path fill="none" stroke="#ff9a24" stroke-width="3" d="M1411.81,-100.15C1449.19,-117.14 1491.47,-136.34 1525.67,-151.87"/>
+<polygon fill="#ff9a24" stroke="#ff9a24" stroke-width="3" points="1525.02,-154.27 1532.4,-154.93 1527.04,-149.81 1525.02,-154.27"/>
+</g>
+<!-- verify -->
+<g id="node11" class="node">
+<title>verify</title>
+<path fill="#33363d" stroke="#c78cec" stroke-width="1.5" d="M1879,-209C1879,-209 1735,-209 1735,-209 1729,-209 1723,-203 1723,-197 1723,-197 1723,-167 1723,-167 1723,-161 1729,-155 1735,-155 1735,-155 1879,-155 1879,-155 1885,-155 1891,-161 1891,-167 1891,-167 1891,-197 1891,-197 1891,-203 1885,-209 1879,-209"/>
+<text text-anchor="middle" x="1807" y="-185.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Validate final tables</text>
+<text text-anchor="middle" x="1807" y="-170.8" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">VERIFY_OUTPUTS</text>
+</g>
+<!-- integrate&#45;&gt;verify -->
+<g id="edge5" class="edge">
+<title>integrate&#45;&gt;verify</title>
+<path fill="none" stroke="#c78cec" stroke-width="3" d="M1687.29,-182C1696.77,-182 1706.38,-182 1715.81,-182"/>
+<polygon fill="#c78cec" stroke="#c78cec" stroke-width="3" points="1715.99,-184.45 1722.99,-182 1715.99,-179.55 1715.99,-184.45"/>
+</g>
+<!-- output -->
+<g id="node12" class="node">
+<title>output</title>
+<polygon fill="#33363d" stroke="#c78cec" stroke-width="1.5" points="2119,-216.5 2116,-220.5 2095,-220.5 2092,-216.5 1927,-216.5 1927,-147.5 2119,-147.5 2119,-216.5"/>
+<text text-anchor="middle" x="2023" y="-193.3" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">OUTPUT</text>
+<text text-anchor="middle" x="2023" y="-178.3" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">XLSX / TSV</text>
+<text text-anchor="middle" x="2023" y="-163.3" font-family="DejaVu Sans" font-size="14.00" fill="#f4f4f4">Orthologous gene map</text>
+</g>
+<!-- verify&#45;&gt;output -->
+<g id="edge6" class="edge">
+<title>verify&#45;&gt;output</title>
+<path fill="none" stroke="#c78cec" stroke-width="3" d="M1891.04,-182C1900.5,-182 1910.22,-182 1919.88,-182"/>
+<polygon fill="#c78cec" stroke="#c78cec" stroke-width="3" points="1919.9,-184.45 1926.9,-182 1919.9,-179.55 1919.9,-184.45"/>
+</g>
+</g>
 </svg>

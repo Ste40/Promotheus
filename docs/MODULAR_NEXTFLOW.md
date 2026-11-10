@@ -7,6 +7,8 @@ functions and pinned image; the new workflow adds task-local adapters in
 
 ![Promotheus Nextflow workflow](images/promotheus-nextflow-dag.svg)
 
+The diagram is generated with Graphviz from `docs/diagrams/nextflow.dot`. With Graphviz installed, run `bash docs/diagrams/render_nextflow_dag.sh` to regenerate SVG and PNG. Double borders indicate parallel task instances; dashed edges carry validated input shards.
+
 ```mermaid
 flowchart TD
     V[VALIDATE_INPUTS: validate and split workbook rows]

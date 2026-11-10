@@ -1,0 +1,40 @@
+digraph Promotheus {
+ graph [rankdir=LR, bgcolor="#24262b", pad="0.5", nodesep="0.6", ranksep="0.5", splines=polyline, fontname="DejaVu Sans", fontsize=25, fontcolor="#f4f4f4", label="Promotheus / Nextflow\n", labelloc=t, compound=true, newrank=true];
+ node [shape=box, style="rounded,filled", fillcolor="#33363d", color="#747984", fontname="DejaVu Sans", fontcolor="#f4f4f4", fontsize=14, margin="0.22,0.16", penwidth=1.5];
+ edge [color="#aab0ba", penwidth=3, arrowsize=0.7];
+ input [label="INPUT\nMicroarray + RNA-Seq XLSX", shape=folder];
+ validate [label="Validate & split\nVALIDATE_INPUTS"];
+ subgraph cluster_orth {
+ label="01  ORTHOLOGY · parallel by genome"; fontsize=17; style=rounded; color="#427281"; bgcolor="#29343b";
+ prep [label="Genomes & proteomes\nORTHOLOGY_PREPARE",color="#26aada"];
+ pair [label="OrthoFinder\nORTHOLOGY_PAIR\nReference × each genome",color="#26aada",peripheries=2];
+ merge [label="Merge gene mappings\nORTHOLOGY_MERGE",color="#26aada"];
+ prep -> pair -> merge [color="#26aada"];
+ }
+ subgraph cluster_ma {
+ label="02  MICROARRAY · parallel by GSE"; fontsize=17; style=rounded; color="#49765a"; bgcolor="#2c3830";
+ ma [label="Chip & expression analysis\nMICROARRAY_GSE",color="#52c878",peripheries=2];
+ }
+ subgraph cluster_rna {
+ label="03  RNA-SEQ"; fontsize=17; style=rounded; color="#8c683b"; bgcolor="#393229";
+ download [label="Reads & reference\nRNA_DOWNLOAD_GSE\nParallel by GSE",color="#ff9a24",peripheries=2];
+ align [label="Rsubread alignment\nRNA_ALIGN_GSE\nParallel by GSE",color="#ff9a24",peripheries=2];
+ analyze [label="Counts & expression\nRNA_ANALYZE\nfeatureCounts · DESeq2\nRockhopper (optional)",color="#ff9a24"];
+ download -> align -> analyze [color="#ff9a24"];
+ }
+ subgraph cluster_results {
+ label="04  INTEGRATION & VALIDATION"; fontsize=17; style=rounded; color="#78628e"; bgcolor="#342e3d";
+ integrate [label="Integrate experiments\nINTEGRATE_RESULTS",color="#c78cec"];
+ verify [label="Validate final tables\nVERIFY_OUTPUTS",color="#c78cec"];
+ output [label="OUTPUT\nXLSX / TSV\nOrthologous gene map",shape=folder,color="#c78cec"];
+ integrate -> verify -> output [color="#c78cec"];
+ }
+ input -> validate;
+ validate -> prep [color="#26aada"];
+ validate -> download [color="#ff9a24"];
+ validate -> ma [style=dashed,color="#52c878"];
+ merge -> ma [color="#52c878"];
+ merge -> integrate [color="#26aada"];
+ ma -> integrate [color="#52c878"];
+ analyze -> integrate [color="#ff9a24"];
+}

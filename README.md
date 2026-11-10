@@ -6,7 +6,7 @@ Promotheus retrieves and integrates bacterial Microarray and RNA-Seq data from N
 
 ![Promotheus Nextflow workflow: parallel orthology and RNA-Seq branches, Microarray analysis, integration and validation](docs/images/promotheus-nextflow-dag.svg)
 
-Colored routes follow the Microarray and RNA-Seq overview on `main`; stations show the actual Nextflow processes. Genome comparisons run in parallel, as do GSE download/alignment tasks. Optional Rockhopper analysis runs inside `RNA_ANALYZE`, grouped by organism when enabled. [Full-size DAG](docs/images/promotheus-nextflow-dag.svg) · [Workflow details](docs/MODULAR_NEXTFLOW.md).
+Colored routes follow the Microarray and RNA-Seq overview on `main`; nodes show the actual Nextflow processes. Genome comparisons run in parallel, as do GSE download/alignment tasks. Optional Rockhopper analysis runs inside `RNA_ANALYZE`, grouped by organism when enabled. [Full-size DAG](docs/images/promotheus-nextflow-dag.svg) · [Graphviz source](docs/diagrams/nextflow.dot) · [Workflow details](docs/MODULAR_NEXTFLOW.md).
 
 ## Run with Nextflow
 
