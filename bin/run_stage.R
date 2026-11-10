@@ -75,7 +75,7 @@ if (stage %in% c("orthology_prepare", "orthology_pair", "orthology_merge")) {
       if (isTRUE(OPERONS_DETECTION)) {
         detected <- Operons_detection(organism_path, THREADS, MEMORY, state$accessions,
           gse_path, groups, operon_threshold, gse_count, state$gse, state$organism)
-        if (!isTRUE(detected)) warning("Operon detection incomplete for ", state$gse)
+        if (!isTRUE(detected)) stop("Operon detection incomplete for ", state$gse)
       }
       if (!isTRUE(NDE_detection(state$gse, gse_path, state$strandness, THREADS, organism_path,
           groups, state$organism, path_rna, CORRECTION_DE, OPERONS_DETECTION, PVALUE, state$accessions))) {

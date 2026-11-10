@@ -2,6 +2,12 @@
 
 Promotheus retrieves and integrates bacterial Microarray and RNA-Seq data from NCBI to identify promoters with stable or variable expression. It harmonizes gene identifiers through orthology and produces expression, percentile, variability and promoter-sequence tables.
 
+## Pipeline overview
+
+![Promotheus Nextflow workflow: parallel orthology and RNA-Seq branches, Microarray analysis, integration and validation](docs/images/promotheus-nextflow-dag.svg)
+
+Colored routes follow the Microarray and RNA-Seq overview on `main`; boxes show the actual Nextflow processes. Genome comparisons run in parallel, as do GSE download/alignment tasks. Optional Rockhopper analysis runs inside `RNA_ANALYZE`, grouped by organism when enabled. [Full-size DAG](docs/images/promotheus-nextflow-dag.svg) · [Workflow details](docs/MODULAR_NEXTFLOW.md).
+
 ## Run with Nextflow
 
 Requirements: **Nextflow ≥23.10, Java ≥17, Python 3 and Docker running**. The workflow launches Docker automatically and mounts the updated repository scripts into a pinned `linux/amd64` image; ARM machines use emulation.
@@ -60,6 +66,8 @@ The full Docker-backed Nextflow run on **3 November 2026** completed **136 tasks
 The balanced profile reduced the observed download-to-alignment wait from 2 h 13 min to 1.1 s. The preceding run was partially cached, so these runs do **not** establish an overall speedup. See [performance evidence](docs/PERFORMANCE.md), the [per-task report](docs/TASK_PERFORMANCE.md), and [orthology reproducibility](docs/ORTHOLOGY_REPRODUCIBILITY.md). Formal biological equivalence with the original monolithic workflow remains untested.
 
 A fresh two-comparison orthology benchmark on **4 November** took **8 min 46 s serially versus 4 min 58 s in parallel** (1.77×), with byte-identical results. This measures the orthology branch only; see the [method and results](docs/PERFORMANCE.md#controlled-comparison-4-november-2026).
+
+A real standalone Rockhopper test on **10 November 2026** passed on GSE116952 (four paired-end samples, two replicate groups) in **13 min 9 s**, producing **490 predicted multi-gene operons**. The replicate-group mapping was corrected and the regression suite passed. This is a single-GSE component test, not a full Nextflow benchmark or biological validation; see the [operon test report](docs/OPERON_VALIDATION.md).
 
 ## Test with the bundled toy dataset
 

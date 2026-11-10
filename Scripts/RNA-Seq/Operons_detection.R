@@ -1,3 +1,34 @@
+# Rockhopper uses commas within a replicate group and spaces between groups.
+rockhopper_read_groups <- function(directory, accessions, group_ids) {
+  accessions <- as.character(accessions)
+  group_ids <- as.character(group_ids)
+  if (!length(accessions) || length(accessions) != length(group_ids) ||
+      anyNA(accessions) || anyNA(group_ids) || anyDuplicated(accessions) ||
+      any(!grepl("^[SED]RR[0-9]+$", accessions)) || any(!nzchar(group_ids)))
+    stop("Invalid or unmatched run/group metadata for Rockhopper")
+  layouts <- integer(length(accessions))
+  expected <- character()
+  reads <- vapply(seq_along(accessions), function(i) {
+    code <- accessions[[i]]
+    single <- paste0(code, ".fastq.gz")
+    pair <- paste0(code, c("_1.fastq.gz", "_2.fastq.gz"))
+    has_single <- file.exists(file.path(directory, single))
+    has_pair <- file.exists(file.path(directory, pair))
+    if (has_single && !any(has_pair)) files <- single
+    else if (!has_single && all(has_pair)) files <- pair
+    else stop("Missing or ambiguous FASTQ layout for ", code)
+    if (any(file.info(file.path(directory, files))$size == 0)) stop("Empty FASTQ for ", code)
+    layouts[[i]] <<- length(files)
+    expected <<- c(expected, files)
+    paste(files, collapse = "%")
+  }, character(1))
+  if (length(unique(layouts)) != 1L) stop("Mixed FASTQ layouts are not supported by this adapter")
+  if (!setequal(list.files(directory, pattern = "\\.fastq\\.gz$"), expected))
+    stop("Unexpected FASTQ files for Rockhopper")
+  vapply(unique(group_ids), function(group) paste(reads[group_ids == group], collapse = ","),
+         character(1), USE.NAMES = FALSE)
+}
+
 Operons_detection <- function(m.o.subpath, threads, memory, Acclist, GSEdirectory, GSEconditions, temp_threshold,
   gse_count, GSE, m.o.correct) {
 
@@ -18,66 +49,23 @@ Operons_detection <- function(m.o.subpath, threads, memory, Acclist, GSEdirector
 
     Rockhopperpath <- "/scripts/RNA-Seq/Rockhopper.jar"
 
-    readsfiles <- list.files(pattern = "*.fastq.gz$", full.names = FALSE, recursive = FALSE, path = GSEdirectory)
-    reads <- c()
-
-    if(length(readsfiles) != length(Acclist)) {
-      Groups <- as.data.frame(str_split(GSEconditions, ","))
-      k <- 1
-      for(i in seq(1, length(readsfiles), by = 2)) {
-        reads[k] <- paste(readsfiles[i], readsfiles[i+1], sep = "%")
-        k <- k + 1
-      }
-
-      dfgroups <- data.frame(reads, Groups)
-      groupscounter <- 1
-      groupsvector <- c()
-      groupsvector[1] <- dfgroups$reads[1]
-      for(i in 2:nrow(dfgroups)) {
-        if(dfgroups[i, 2] == groupscounter) {
-          groupsvector[groupscounter] <- paste0(groupsvector[groupscounter], ",", dfgroups[i, 1])
-        } else {
-          groupscounter <- groupscounter + 1
-          groupsvector[groupscounter] <- dfgroups[i, 1]
-        }
-      }
-      groupsvector <- paste(groupsvector, collapse = ' ')
-
-    } else {
-      Groups <- as.data.frame(str_split(GSEconditions, ","))
-      dfgroups <- data.frame(readsfiles, Groups)
-      groupscounter <- 1
-      groupsvector <- c()
-      groupsvector[1] <- readsfiles[1]
-      for(i in 2:nrow(dfgroups)) {
-        if(dfgroups[i, 2] == groupscounter) {
-          groupsvector[groupscounter] <- paste0(groupsvector[groupscounter], ",", dfgroups[i, 1])
-        } else {
-          groupscounter <- groupscounter + 1
-          groupsvector[groupscounter] <- dfgroups[i, 1]
-        }
-      }
-      groupsvector <- paste(groupsvector, collapse = ' ')
-    }
-
-    # Esecuzione di Rockhopper
+    if (!is.data.frame(GSEconditions) || nrow(GSEconditions) != 1L ||
+        !"Groups" %in% names(GSEconditions)) stop("Missing Rockhopper group assignments")
+    group_ids <- strsplit(as.character(GSEconditions$Groups[[1]]), ",", fixed = TRUE)[[1]]
+    groupsvector <- rockhopper_read_groups(GSEdirectory, Acclist, group_ids)
     setwd(GSEdirectory)
-    genomespath <- gsub(" ", "\\\\ ", m.o.subpath)
-
-    if (identical(list.files(path = m.o.subpath, pattern = "*.fna$"), character(0))) {
-      string <- paste("gunzip", paste0(genomespath, "/", list.files(pattern = "*.fna.gz$", path = m.o.subpath)))
-      bash <- paste('bash -c', shQuote(string))
-      system(bash)
+    if (!length(list.files(m.o.subpath, pattern = "\\.fna$"))) {
+      genomes <- list.files(m.o.subpath, pattern = "\\.fna\\.gz$", full.names = TRUE)
+      if (!length(genomes)) stop("No reference FASTA for Rockhopper")
+      status <- system2("gunzip", c("-k", shQuote(genomes)))
+      if (status != 0L) stop("Reference decompression failed for Rockhopper")
     }
-
-    outpath <- GSEdirectory
-    outpath <- gsub(" ", "\\\\ ", GSEdirectory)
-    Rockhopperpath <- gsub(" ", "\\\\ ", Rockhopperpath)
-
-    string <- paste("java", paste0("-Xmx", memory, "m"), "-cp", Rockhopperpath, "Rockhopper -o", outpath, "-g", genomespath, groupsvector)
-    bash <- paste('bash -c', shQuote(string))
-    system(bash)
-
+    message("Rockhopper replicate groups: ", paste(groupsvector, collapse = " | "))
+    status <- system2("java", c(paste0("-Xmx", memory, "m"), "-cp", shQuote(Rockhopperpath),
+      "Rockhopper", "-o", shQuote(GSEdirectory), "-g", shQuote(m.o.subpath), shQuote(groupsvector)))
+    if (status != 0L) stop("Rockhopper failed with exit code ", status, " for ", GSE)
+    if (!length(list.files(GSEdirectory, pattern = "_operons.txt$")))
+      stop("Rockhopper completed without an operon table for ", GSE)
   }
 
   parent_dir <- dirname(GSEdirectory)

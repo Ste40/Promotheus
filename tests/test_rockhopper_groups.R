@@ -1,0 +1,21 @@
+args <- commandArgs(trailingOnly=TRUE)
+root <- if(length(args)) args[[1]] else '.'
+source(file.path(root,'Scripts/RNA-Seq/Operons_detection.R'))
+fails <- function(expr) stopifnot(inherits(tryCatch({force(expr);NULL},error=identity),'error'))
+run <- function() {
+  p<-tempfile();dir.create(p);on.exit(unlink(p,recursive=TRUE))
+  ids<-c('SRR4','SRR2','SRR3','SRR1')
+  for(id in ids) for(mate in 1:2) writeLines('read',file.path(p,paste0(id,'_',mate,'.fastq.gz')))
+  pair<-function(id) paste0(id,'_1.fastq.gz%',id,'_2.fastq.gz')
+  actual<-rockhopper_read_groups(p,ids,c(1,2,1,2))
+  stopifnot(identical(actual,c(paste(pair('SRR4'),pair('SRR3'),sep=','),paste(pair('SRR2'),pair('SRR1'),sep=','))))
+  fails(rockhopper_read_groups(p,ids,c(1,2)))
+  fails(rockhopper_read_groups(p,c('SRR1','SRR1'),c(1,1)))
+  unlink(file.path(p,'SRR1_2.fastq.gz'))
+  fails(rockhopper_read_groups(p,ids,c(1,2,1,2)))
+  unlink(list.files(p,full.names=TRUE))
+  for(id in ids) writeLines('read',file.path(p,paste0(id,'.fastq.gz')))
+  stopifnot(identical(rockhopper_read_groups(p,ids,c(1,2,1,2)),c('SRR4.fastq.gz,SRR3.fastq.gz','SRR2.fastq.gz,SRR1.fastq.gz')))
+}
+run()
+cat('PASS: Rockhopper replicate groups preserve run identity, pairing and noncontiguous groups\n')
