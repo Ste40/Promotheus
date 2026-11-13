@@ -125,7 +125,7 @@ The output table contains gene expression values, percentiles, coefficient of va
 - **GeneID**: The unique identifier for the gene, according to the gene nomenclature of the user-provided ASMcode.
 - **Expression_GSEXXXXX**: Gene expression values for each GSE.
 - **Mean_Expression**: The average expression value of the gene across all samples in the datasets.
-- **CV**: Coefficient of variation, indicating the variability of the gene expression across samples, computed as the standard deviation of log-transformed expression values. A higher CV suggests more variation in gene expression.
+- **CV**: Sample standard deviation divided by the mean of the integrated expression values (`sd / mean`), reported as a ratio, not a percentage. At least two finite observations and a positive mean are required; otherwise analysis fails explicitly. This describes variability on the integrated expression scale (which may be log-transformed), not a CV reconstructed on the original abundance scale. Earlier versions incorrectly wrote the standard deviation into this column.
 - **Percentile_GSEXXXXX**: Percentile values for the gene expression in different datasets.
 - **Mean_Percentile**: The average percentile value across all datasets for the gene.
 - **Percentile_SD**: Standard deviation of the percentile values across all datasets for the gene.

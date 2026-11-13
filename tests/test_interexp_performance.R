@@ -28,7 +28,7 @@ stopifnot(
   identical(result$Gene_name, complete_table[, 1]),
   identical(result$GeneID, complete_table[, 2]),
   isTRUE(all.equal(as.numeric(result$Mean_Expression), legacy_means, tolerance = 1e-12)),
-  isTRUE(all.equal(as.numeric(result$CV), legacy_sd, tolerance = 1e-12)),
+  isTRUE(all.equal(as.numeric(result$CV), legacy_sd / legacy_means, tolerance = 1e-12)),
   isTRUE(all.equal(as.numeric(result$Mean_Percentile), legacy_percentile_means, tolerance = 1e-12)),
   isTRUE(all.equal(as.numeric(result$Percentile_SD), legacy_percentile_sd, tolerance = 1e-12)),
   identical(result$DE, complete_table[, ncol(complete_table)])
@@ -77,3 +77,14 @@ stopifnot(identical(reference_gene_rows(gff, "LOC_1"), 2L),
           inherits(tryCatch(reference_gene_rows(gff, "MISSING"), error = identity), "error"))
 
 cat("PASS: inter-experiment calculations and GFF reference matching\n")
+
+# CV is dimensionless and invariant under positive rescaling.
+scaled <- create_final_table(expression_matrix * 10, complete_table)
+stopifnot(isTRUE(all.equal(as.numeric(result$CV), as.numeric(scaled$CV))))
+constant <- create_final_table(matrix(5, nrow=3, ncol=3, dimnames=dimnames(expression_matrix)), complete_table)
+stopifnot(all(as.numeric(constant$CV) == 0))
+for (bad in list(matrix(0,3,3), matrix(-1,3,3), matrix(NA_real_,3,3), matrix(Inf,3,3), matrix(1,3,1))) {
+  err <- tryCatch(create_final_table(bad, complete_table), error=identity)
+  stopifnot(inherits(err, "error"), grepl("Cannot compute CV", conditionMessage(err)))
+}
+cat("PASS: CV ratio, scale invariance and undefined-value rejection\n")

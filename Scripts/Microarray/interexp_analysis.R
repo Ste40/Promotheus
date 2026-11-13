@@ -243,6 +243,13 @@ create_final_table <- function(espressione_media, tabella_completa) {
   storage.mode(expression_matrix) <- "double"
   mean_psnorm <- rowMeans(expression_matrix)
   sd_psnorm <- apply(expression_matrix, 1, sd)
+  # A CV requires a positive mean and at least two finite observations.
+  if (ncol(expression_matrix) < 2L || any(!is.finite(expression_matrix)) ||
+      any(!is.finite(mean_psnorm)) || any(mean_psnorm <= 0)) {
+    stop("Cannot compute CV: expression values must be finite, with at least two samples and a positive mean for every gene")
+  }
+  cv_psnorm <- sd_psnorm / mean_psnorm
+  if (any(!is.finite(cv_psnorm))) stop("Cannot compute CV: non-finite result")
 
   # percentiles
   percentile <- apply(expression_matrix, 2, function(values) {
@@ -255,7 +262,7 @@ create_final_table <- function(espressione_media, tabella_completa) {
   percentile_sd <- apply(percentile, 1, sd)
 
   # final table
-  finaltab <- cbind(gene_name, locus_tag, espressione_media, mean_psnorm, sd_psnorm, percentile, percentile_medio,
+  finaltab <- cbind(gene_name, locus_tag, espressione_media, mean_psnorm, cv_psnorm, percentile, percentile_medio,
     percentile_sd, DE)
   etichette_espressione <- paste("Expression_", elenco_GSE, sep = "")
   etichette_percentile <- paste("Percentile_", elenco_GSE, sep = "")
