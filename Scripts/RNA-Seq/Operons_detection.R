@@ -81,8 +81,7 @@ mode_filename <- file.path(parent_dir, paste0(microorganism, "_operons_mode.txt"
 if(file.exists(mode_filename)) {
   cat("Operon detection already performed for", temp_threshold,
       "different GSE datasets for this microorganism. Skipping detection.\n")
-  return(TRUE)
-} else if(detected_count == temp_threshold) {
+} else if(detected_count >= temp_threshold) {
   # Legge tutti i file *_operons.txt presenti nelle directory dei GSE
   all_data <- NULL
   for(gse in gse_dirs) {

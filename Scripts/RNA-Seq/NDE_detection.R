@@ -256,11 +256,16 @@ NDE_detection <- function(GSE, GSEdirectory, strandness, threads, m.o.subpath, G
     } else if (file.exists(mode_file)) {
       cat("Using operons_mode file:", mode_file, "\n")
       operons_mode <- read.table(mode_file, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+      operons_mode$Genes <- vapply(seq_len(nrow(operons_mode)), function(i) {
+        genes <- strsplit(operons_mode$Genes[i], ",\\s*", perl=TRUE)[[1]]
+        if (operons_mode$Strand[i] == "+") genes[1] else genes[length(genes)]
+      }, character(1))
 
       if (file.exists(file.path(GSEdirectory, "_operons.txt"))) {
         operonstab <- read.table(file.path(GSEdirectory, "_operons.txt"), header = TRUE, sep = "\t",
           stringsAsFactors = FALSE)
         colnames(operonstab)[ncol(operonstab)] <- "GeneID"
+          operonstab$GeneID <- as.character(operonstab$GeneID)
         operonsfull <- unlist(strsplit(operonstab$GeneID, ", "))
 
         for (i in seq_len(nrow(operonstab))) {
@@ -300,6 +305,7 @@ NDE_detection <- function(GSE, GSEdirectory, strandness, threads, m.o.subpath, G
         operonstab <- read.table(file.path(GSEdirectory, "_operons.txt"), header = TRUE, sep = "\t",
           stringsAsFactors = FALSE)
         colnames(operonstab)[ncol(operonstab)] <- "GeneID"
+          operonstab$GeneID <- as.character(operonstab$GeneID)
         operonsfull <- unlist(strsplit(operonstab$GeneID, ", "))
 
         for (i in seq_len(nrow(operonstab))) {
