@@ -63,7 +63,11 @@ normalize_split_fastq_files <- function(accession, directory) {
 
 fastq_accession_complete <- function(accession, directory, compressed = TRUE) {
   files <- fastq_files_for_accession(accession, directory, compressed = compressed)
-  length(files) %in% c(1L, 2L) && all(file.info(files)$size > 0)
+  suffix <- if (compressed) ".fastq.gz" else ".fastq"
+  names <- basename(files)
+  single <- paste0(accession, suffix)
+  pair <- paste0(accession, c("_1", "_2"), suffix)
+  (identical(names, single) || setequal(names, pair)) && all(file.info(files)$size > 0)
 }
 
 compress_fastq_files <- function(files, threads, runner = system2) {
@@ -93,7 +97,13 @@ download_fastq_with_retry <- function(accession, directory, threads,
     stop("max_attempts must be at least 1")
   }
 
+  directory <- normalizePath(directory, mustWork = TRUE)
+  scratch <- NULL
+  on.exit(if (!is.null(scratch)) unlink(scratch, recursive = TRUE, force = TRUE), add = TRUE)
   for (attempt in seq_len(max_attempts)) {
+    # Isolate scratch so retries can remove only their own temporary files.
+    scratch <- tempfile(paste0(".fasterq-", accession, "-"), tmpdir = directory)
+    if (!dir.create(scratch)) stop("Cannot create fasterq scratch directory")
     partial_files <- c(
       fastq_files_for_accession(accession, directory, compressed = FALSE),
       fastq_files_for_accession(accession, directory, compressed = TRUE)
@@ -106,7 +116,7 @@ download_fastq_with_retry <- function(accession, directory, threads,
                   paste0("(attempt ", attempt, "/", max_attempts, ")")))
     arguments <- c(
       "-m", "1G", "-p", "--split-3", "--skip-technical", "-x", accession,
-      "-e", as.character(threads), "-t", shQuote(directory)
+      "-e", as.character(threads), "-O", shQuote(directory), "-t", shQuote(scratch)
     )
     status <- tryCatch(
       suppressWarnings(runner("fasterq-dump", args = arguments)),
@@ -115,6 +125,8 @@ download_fastq_with_retry <- function(accession, directory, threads,
         127L
       }
     )
+    unlink(scratch, recursive = TRUE, force = TRUE)
+    scratch <- NULL
     if (identical(as.integer(status), 0L)) {
       normalize_split_fastq_files(accession, directory)
     }

@@ -41,3 +41,15 @@ The test passed, but it does **not** establish that the disk-exhaustion risk is 
 ## Evidence
 
 Local inputs, scripts, logs and machine-readable reports are retained under `real-runs/2026-11-13-validation-234/` outside the repository. No historical benchmark outputs were overwritten.
+
+## Follow-up: isolated scratch and incomplete FASTQ pairs
+
+The download helper now passes an explicit output directory and creates a separate scratch directory for each accession attempt. That scratch directory is removed after command success or failure, with an R exit handler as an additional safeguard. Unrelated files are preserved. This handles ordinary errors; it cannot guarantee cleanup after SIGKILL or a machine crash.
+
+Completeness checks now accept exactly one single-end file or both paired-end mates. An isolated `_1` or `_2` mate is rejected instead of being mistaken for a complete single-end accession. These changes do not add cross-task caching: a failed Nextflow GSE task still needs its own recovery strategy.
+
+A real fasterq safety-check test with explicit one-byte output and scratch limits failed as expected (`disk-limit exceeded`, exit 3), and left no files in the test directory. This exercises the tool's preflight failure path without filling the physical disk. Injected failures additionally verify scratch cleanup between retries and preservation of unrelated files. The complete regression suite passed.
+
+The repeated full SRR7511294 test passed: extraction 376.7 s, extraction plus compression 421.9 s, largest sampled output/scratch footprint **8.19 GiB** versus 9.46 GiB previously. Final output contains only the two compressed mates. A single sequential comparison with 3-second sampling does not establish a stable peak reduction or speedup. The host returned to approximately 60 GiB free after completion on this run; the earlier delayed reclamation has not been conclusively explained. Keep adequate disk headroom rather than sizing storage only from final compressed FASTQs. Evidence is in `real-runs/2026-11-16-disk-check/disk/`.
+
+The decompressed FASTQ SHA-256 hashes match the previous benchmark for both mates, confirming unchanged read content in this comparison.

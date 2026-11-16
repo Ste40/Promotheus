@@ -64,3 +64,24 @@ stopifnot(
 )
 
 cat("PASS: fasterq-dump retry and partial-file cleanup tests\n")
+
+# A single mate must never be accepted as a complete accession.
+writeLines("reads", file.path(test_dir, "SRR000007_1.fastq.gz"))
+stopifnot(!fastq_accession_complete("SRR000007", test_dir))
+# Failed attempts discard only their own scratch, independently of caller cwd.
+unrelated <- file.path(test_dir, "keep-me")
+dir.create(unrelated); writeLines("keep", file.path(unrelated,"evidence"))
+seen <- character()
+runner_scratch <- function(command, args) {
+  unquote <- function(x) gsub("^'|'$", "", x)
+  scratch <- unquote(args[match("-t",args)+1L])
+  output <- unquote(args[match("-O",args)+1L])
+  stopifnot(dir.exists(scratch), identical(output, normalizePath(test_dir)),
+            all(!dir.exists(seen)))
+  seen <<- c(seen,scratch)
+  writeLines("scratch",file.path(scratch,"temporary"))
+  3L
+}
+stopifnot(!download_fastq_with_retry("SRR000008",test_dir,1,max_attempts=2,base_delay=0,runner=runner_scratch))
+stopifnot(length(seen)==2,all(!dir.exists(seen)),file.exists(file.path(unrelated,"evidence")))
+cat("PASS: isolated scratch cleanup and incomplete-mate rejection\n")
