@@ -53,3 +53,22 @@ A real fasterq safety-check test with explicit one-byte output and scratch limit
 The repeated full SRR7511294 test passed: extraction 376.7 s, extraction plus compression 421.9 s, largest sampled output/scratch footprint **8.19 GiB** versus 9.46 GiB previously. Final output contains only the two compressed mates. A single sequential comparison with 3-second sampling does not establish a stable peak reduction or speedup. The host returned to approximately 60 GiB free after completion on this run; the earlier delayed reclamation has not been conclusively explained. Keep adequate disk headroom rather than sizing storage only from final compressed FASTQs. Evidence is in `real-runs/2026-11-16-disk-check/disk/`.
 
 The decompressed FASTQ SHA-256 hashes match the previous benchmark for both mates, confirming unchanged read content in this comparison.
+
+## Complete Nextflow operon workflow
+
+The complete scientific path passed with operons enabled and threshold 2, using GSE116952 (4 paired-end samples), GSE74554 (6 single-end samples), and Microarray GSE54577 (6 samples). RNA inputs were the previously prepared first 100,000 reads per FASTQ. The Microarray task succeeded in the first attempt; after NCBI returned HTTP 403 for supplementary files on a later attempt, its real full-table checkpoint was reused. The orthology map was verified byte-identical before reusing this checkpoint. This is not a fresh full-data download benchmark.
+
+The successful attempt completed 12 Nextflow tasks in **480.95 seconds (8 min 1 s)**. Both RNA GSEs were grouped into one organism-level `RNA_ANALYZE` task. Final validation and an additional audit passed: **232 genes × 40 columns**, all **16 samples** present (6 + 4 + 6), and no `WAITING_FOR_OPERONS_TABLE` rows in either RNA result. The mode table was retained as evidence. These checks validate execution and annotation completeness, not biological accuracy of operon prediction.
+
+| Task | Observed time |
+| --- | --- |
+| Orthology comparison | 3 min 7 s |
+| RNA alignment, GSE116952 | 2 min 1 s |
+| RNA alignment, GSE74554 | 2 min 40 s |
+| Joint RNA analysis and operons | 2 min 8 s |
+| Microarray checkpoint reuse | 19 s |
+| Integration | 24 s |
+
+The first attempt exposed a staging conflict in `my_index.files`: independently built Rsubread indexes contain different temporary filenames. RNA analysis no longer stages root-level `my_index.*` alignment artifacts, which it does not consume. Reference genomes remain subject to byte-level conflict checks. Regression tests verify both index exclusion and rejection of genuinely different reference sequences; the full regression suite passed.
+
+Evidence, per-task timings, source hashes, input preparation details and preserved failed-attempt logs are in `real-runs/2026-11-16-operons-nextflow/`. Download stages consumed prepared read subsets; their timing does not measure downloading full FASTQs. Total time excludes failed attempts and preparation.

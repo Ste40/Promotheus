@@ -88,6 +88,8 @@ class InputAndIsolationTests(unittest.TestCase):
                 organism = dependency / "RNA_Seq/Toy"
                 organism.mkdir(parents=True)
                 (organism / "genome.fna").write_text("ACGT")
+                (organism / "my_index.files").write_text(f"temporary-path-{i}")
+                (organism / "my_index.00.b.tab").write_text(f"index-{i}")
                 (dependency / "descriptor.json").write_text(json.dumps({"organism": "Toy", "ordinal": i, "accession": f"GSE{i}"}))
                 (dependency / "state.rds").write_text(str(i))
                 dependencies.append(dependency)
@@ -97,6 +99,7 @@ class InputAndIsolationTests(unittest.TestCase):
             self.assertEqual((output / "states/00000000.rds").read_text(), "0")
             self.assertEqual((output / "states/00000001.rds").read_text(), "1")
             self.assertEqual((output / "RNA_Seq/Toy/genome.fna").read_text(), "ACGT")
+            self.assertFalse(list((output / "RNA_Seq/Toy").glob("my_index.*")))
             (dependencies[1] / "RNA_Seq/Toy/genome.fna").write_text("DIFFERENT")
             (directory / "conflict").mkdir()
             with self.assertRaisesRegex(ValueError, "Conflicting shared reference"):

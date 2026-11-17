@@ -23,12 +23,15 @@ def digest_file(path):
     return digest.digest()
 
 
-def copy_tree(source, target, verify_existing=False):
+def copy_tree(source, target, verify_existing=False, exclude_root_prefixes=()):
     source, target = Path(source), Path(target)
     if not source.exists():
         return
     for item in sorted(source.rglob("*")):
-        dest = target / item.relative_to(source)
+        relative = item.relative_to(source)
+        if len(relative.parts) == 1 and any(item.name.startswith(prefix) for prefix in exclude_root_prefixes):
+            continue
+        dest = target / relative
         if item.is_dir():
             dest.mkdir(parents=True, exist_ok=True)
         elif item.is_file():
@@ -92,7 +95,8 @@ def assemble(stage, dependencies, output):
         for i, (descriptor, dependency) in enumerate(descriptors(dependencies)):
             # Only merge the organism tree, never the per-GSE state or group workbook.
             copy_tree(dependency / "RNA_Seq" / descriptor["organism"],
-                      output / "RNA_Seq" / descriptor["organism"], verify_existing=True)
+                      output / "RNA_Seq" / descriptor["organism"], verify_existing=True,
+                      exclude_root_prefixes=("my_index.",))
             if (dependency / "state.rds").exists():
                 shutil.copy2(dependency / "state.rds", states / f"{i:08d}.rds")
     elif stage == "integrate":
