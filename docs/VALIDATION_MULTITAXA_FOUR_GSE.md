@@ -66,3 +66,5 @@ The production microarray downloader now falls back to the canonical NCBI HTTPS 
 `Rscript tests/test_geo_raw_download.R .` covers empty/failed listings, the normal GEOquery path, existing valid archives, invalid responses, third-attempt success, nonzero download status, and partial-file cleanup. The test is included in the regression suite.
 
 In the pinned production container, a fresh live GSE64918 download passed. A separate test simulated only an empty listing and performed the real HTTPS fallback: its archive matched the GEOquery-downloaded archive byte-for-byte by digest and contained the six original GSM files. Evidence is retained locally in `real-runs/2026-11-17-geo-download-fix/`. This verifies the download component; the four-GSE scientific run above used the earlier manual staging workaround.
+
+The subsequent [clean-download, interruption and reproducibility validation](VALIDATION_CLEAN_RESUME_REPRO.md) exercised both microarrays without checkpoints, found and corrected a separate GSM metadata issue, and compared two complete results.

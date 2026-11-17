@@ -82,6 +82,10 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
 
   for(j in 1:n_GSE){
     a<-getGEO(GSE[j],AnnotGPL = T,GSEMatrix = F)
+    # Family SOFT already contains all GSM headers. Keep the same metadata
+    # snapshot for grouping, rather than making separate requests per sample.
+    saveRDS(lapply(a@gsms, function(sample) sample@header),
+            file.path(path_file, paste0(".", GSE[j], "_sample_headers.rds")))
     # GPL
     GPL[j]<-a@header$platform_id
     # GSM
@@ -359,28 +363,46 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
 
 }
 
+# Use the family metadata already retrieved for this task. Legacy callers
+# without a snapshot can still request individual GSMs, with clean retries.
+read_geo_sample_headers <- function(gsm, gse, path_gse, fetch=getGEO, sleep_fn=Sys.sleep) {
+  snapshot <- file.path(dirname(path_gse), paste0(".", gse, "_sample_headers.rds"))
+  if (file.exists(snapshot)) {
+    headers <- readRDS(snapshot)
+    if (!all(gsm %in% names(headers))) stop("Incomplete sample metadata for ", gse)
+    return(headers[gsm])
+  }
+  headers <- setNames(vector("list", length(gsm)), gsm)
+  for (accession in gsm) {
+    sample <- NULL
+    last_error <- "Empty GEO response"
+    for (attempt in seq_len(3L)) {
+      sample <- tryCatch(fetch(GEO=accession, destdir=path_gse), error=function(e) {
+        last_error <<- conditionMessage(e)
+        NULL
+      })
+      if (!is.null(sample) && methods::is(sample, "GSM")) break
+      # GEOquery may cache an HTML error page under a .soft filename.
+      unlink(file.path(path_gse, paste0(accession, ".soft")))
+      if (attempt < 3L) sleep_fn(60)
+    }
+    if (is.null(sample) || !methods::is(sample, "GSM")) {
+      stop("Cannot retrieve sample metadata for ", accession, ": ", last_error)
+    }
+    headers[[accession]] <- sample@header
+  }
+  headers
+}
+
 # Retrieving experimental conditions for each GSE
 Groups_retrieval = function(gsm,GSE,path_GSE){
 
+  headers <- read_geo_sample_headers(gsm, GSE, path_GSE)
   cond= list()
   # Retrieving experimental conditions for each GSM
   for (i in 1:length(gsm)){
-    for(j in 1:3){
-      tryCatch({
-      gsmsingolo=getGEO(GEO= gsm[i], destdir=path_GSE)
-        if(length(gsmsingolo)>0){
-          break
-        }
-      },error=function(e){
-          message("An error occurred while downloading file for",gsm[i])
-          Sys.sleep(60)
-
-      })
-    }
-    if(j==3){
-      next
-    }
-    cond[[i]]= paste(gsmsingolo@header$title, gsmsingolo@header$characteristics_ch1)
+    header <- headers[[gsm[i]]]
+    cond[[i]]= paste(header$title, header$characteristics_ch1)
     cond[[i]]<-gsub("[;:/%*()]"," ",cond[[i]])
 
 
