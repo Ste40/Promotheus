@@ -1,3 +1,58 @@
+# GEO directory listings can be empty/blocked while the canonical RAW archive
+# remains accessible. Only promote a validated temporary download to the cache.
+geo_raw_archive_valid <- function(path) {
+  if (!file.exists(path) || is.na(file.info(path)$size) || file.info(path)$size == 0) return(FALSE)
+  members <- tryCatch(
+    withCallingHandlers(utils::untar(path, list=TRUE, tar="internal"),
+                        warning=function(w) stop(conditionMessage(w))),
+    error=function(e) character())
+  length(members) > 0L &&
+    any(grepl("^GSM[0-9]+", basename(members))) &&
+    !any(grepl("^/|(^|/)\\.\\.(/|$)", members))
+}
+
+download_geo_raw <- function(gse, base_dir, max_attempts=3L, delay=60,
+                             supp_fn=getGEOSuppFiles,
+                             download_fn=utils::download.file, sleep_fn=Sys.sleep) {
+  if (length(gse) != 1L || is.na(gse) || !grepl("^GSE[0-9]+$", gse)) stop("Invalid GEO series accession")
+  if (length(max_attempts) != 1L || is.na(max_attempts) || max_attempts < 1L) stop("Invalid retry count")
+  destination <- file.path(base_dir, gse)
+  dir.create(destination, recursive=TRUE, showWarnings=FALSE)
+  archive <- file.path(destination, paste0(gse, "_RAW.tar"))
+  if (geo_raw_archive_valid(archive)) return(archive)
+  series <- paste0(sub("[0-9]{1,3}$", "", gse), "nnn")
+  url <- paste0("https://ftp.ncbi.nlm.nih.gov/geo/series/", series, "/", gse,
+                "/suppl/", gse, "_RAW.tar")
+  old_options <- options(timeout=max(600, getOption("timeout", 60)))
+  on.exit(options(old_options), add=TRUE)
+  partial <- tempfile(paste0(gse, "-"), tmpdir=destination, fileext=".part")
+  on.exit(unlink(partial), add=TRUE)
+  last_error <- "No valid RAW archive returned"
+  for (attempt in seq_len(max_attempts)) {
+    tryCatch(supp_fn(gse, makeDirectory=TRUE, baseDir=base_dir),
+             error=function(e) message("GEO listing/download failed for ", gse, ": ", conditionMessage(e)))
+    if (geo_raw_archive_valid(archive)) return(archive)
+    message("Trying direct GEO RAW archive for ", gse, " (", attempt, "/", max_attempts, ")")
+    success <- tryCatch({
+      unlink(partial)
+      status <- download_fn(url, destfile=partial, mode="wb", quiet=TRUE)
+      if (!identical(as.integer(status), 0L) || !geo_raw_archive_valid(partial)) {
+        stop("Download failed or returned an invalid RAW archive")
+      }
+      if (!file.rename(partial, archive)) stop("Cannot install downloaded RAW archive")
+      TRUE
+    }, error=function(e) {
+      last_error <<- conditionMessage(e)
+      FALSE
+    })
+    if (success) return(archive)
+    unlink(partial)
+    if (attempt < max_attempts) sleep_fn(delay)
+  }
+  stop("Unable to retrieve RAW data for ", gse, " after ", max_attempts,
+       " attempts: ", last_error, ". URL: ", url)
+}
+
 # Function that retrieves data related to the analyzed experiments
 data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
   completed <- file.exists(file.path(path_file, paste0(GSE, "_full_tab.txt")))
@@ -134,30 +189,13 @@ data_retrieval<-function(GSE,path_file,asm_name,taxid_species){
 
     if(dir.exists(paste(path_file,GSE[i],sep="/"))==0 || length(dir(paste(path_file,GSE[i],sep="/"),pattern = "GSM"))!=n_GSM[i]){
 
-      for(ii in 1:3){
-        tryCatch({
-          b<-getGEOSuppFiles(GSE[i],makeDirectory = TRUE,baseDir = path_file)
-          path1 <- paste(path_file, GSE[i], sep = "/")
-          directory <- dir(path1)
-          ind <- which(regexpr("_RAW.tar",directory)<0)
-          if(length(ind) > 0) {
-            file.remove(paste(path1,directory[ind], sep = "/"))
-            directory <- directory[-ind]
-            unlink(paste(path1, "immagini", sep = "/"),force = TRUE, recursive = T)
-          }
-          break
-        }, error = function(e) {
-          message("An error occurred while downloading file for",GSE[i])
-          Sys.sleep(60)
-
-        })
-      }
-      if (ii == 3) {
-        next
-      }
+      archive <- download_geo_raw(GSE[i], path_file)
+      path1 <- dirname(archive)
+      directory <- basename(archive)
       if(length(directory)>0){
         path2<-paste(path1,directory,sep="/")
-        untar(path2,exdir=path1)
+        extraction_status <- untar(path2,exdir=path1)
+        if (extraction_status != 0L) stop("Failed to extract GEO RAW archive for ", GSE[i])
 
         exprreg<-"^GPL[0-9]+"
         list_file<-dir(path1)
