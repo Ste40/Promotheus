@@ -7,7 +7,9 @@ functions and pinned image; the new workflow adds task-local adapters in
 
 ![Promotheus Nextflow workflow](images/promotheus-nextflow-dag.svg)
 
-The diagram is generated with Graphviz from `docs/diagrams/nextflow.dot`. With Graphviz installed, run `bash docs/diagrams/render_nextflow_dag.sh` to regenerate SVG and PNG. Double borders indicate parallel task instances; dashed edges carry validated input shards.
+The overview retains the parallel routes and analysis steps of the workflow, using reader-facing descriptions with short references to GEO/GSE, SRA/SRR and the main analysis tools, while omitting internal process names. It shows study selection, genome comparison, Microarray and RNA-seq analysis, integration and output checks. Genome comparison supplies the gene matches used in Microarray analysis and integration; optional operon detection belongs to RNA-seq analysis. The process-level graph below gives the implementation details.
+
+Regenerate the vector with `python3 docs/diagrams/render_nextflow_dag.py`. To regenerate both SVG and PNG, run `bash docs/diagrams/render_nextflow_dag.sh` with either `rsvg-convert` installed or the Python package `resvg-py==0.3.2` available. Set `PYTHON=/path/to/venv/bin/python` to use a dedicated environment. The README embeds the matching PNG and links to the scalable SVG. The Graphviz `.dot` file remains a technical dependency reference.
 
 ```mermaid
 flowchart TD
