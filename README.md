@@ -8,19 +8,19 @@ Promotheus retrieves and integrates bacterial Microarray and RNA-Seq data from N
 
 Choose public studies, retrieve their data, analyze gene expression and combine the results into gene/promoter tables. Microarray and RNA-seq follow separate analysis paths; genome comparison links corresponding genes across species. [Full-size overview](docs/images/promotheus-nextflow-dag.svg) · [Technical workflow details](docs/MODULAR_NEXTFLOW.md).
 
-## Improvements over the original Docker release
+## Advances over the legacy Docker implementation
 
-This version still uses Docker for its analysis tools. Nextflow manages separate tasks and runs the updated scripts from this repository; the original published Docker image is not rebuilt by these changes.
+The Nextflow implementation introduces modular workflow orchestration while retaining a containerized analysis environment. It executes the updated scientific scripts from this repository within a pinned Docker image; these updates do not modify the previously released image.
 
-- **More parallel work:** compare genomes independently and process Microarray datasets and RNA-Seq download/alignment tasks by GSE. RNA-Seq and orthology can overlap; operon-enabled RNA analysis groups studies by organism.
-- **Resume individual tasks:** `-resume` reuses eligible completed tasks after an interruption. Changes to scientific scripts invalidate their cached tasks, reducing the risk of reusing outdated results.
-- **Control resources per stage:** set CPU, memory and concurrency separately. The balanced profile reserves capacity for an RNA-Seq task alongside orthology.
-- **See where time is spent:** per-task logs, execution traces, timelines and reports make failures and bottlenecks easier to locate.
-- **Stricter data checks:** validate inputs, sample/run assignments, GSE coverage, numeric results and agreement between Excel and TSV exports. Unsupported sample layouts fail explicitly.
-- **More reliable data retrieval:** recover GEO RAW archives through a direct-download fallback, reuse GSE-family sample metadata, reject incomplete FASTQ pairs and clean temporary extraction files after ordinary failures.
-- **Correctness fixes and documented tests:** corrected CV calculation and multi-GSE operon annotation are covered by regression tests, alongside real-data checks for interspecies integration, interruption recovery and reproducibility.
+- **Modular execution and parallelization.** Genome comparisons are scheduled independently, while Microarray analysis and RNA-Seq data retrieval and alignment are parallelized by GEO Series (GSE). Orthology and RNA-Seq processing can execute concurrently. When operon detection is enabled, downstream RNA-Seq analysis is grouped by organism.
+- **Task-level recovery and cache integrity.** Nextflow's `-resume` mechanism reuses eligible completed tasks following an interruption. Scientific source changes invalidate the corresponding cache entries, preventing reuse of results generated with outdated scripts.
+- **Explicit resource allocation.** CPU, memory and concurrency limits can be configured by analysis stage. The balanced execution profile reserves resources for RNA-Seq processing alongside orthology comparisons.
+- **Execution traceability.** Task-specific logs, execution traces, timelines and reports support failure diagnosis, resource assessment and identification of computational bottlenecks.
+- **Input and output integrity checks.** Automated validation checks input structure, sample-to-run correspondence, GSE coverage, numerical validity and consistency between Excel and TSV outputs. Unsupported sample configurations produce explicit errors.
+- **Improved data retrieval and temporary-file management.** Direct GEO RAW archive retrieval provides a fallback when supplementary-file discovery fails. Reuse of GSE-family metadata avoids redundant sample requests, while FASTQ pair validation and cleanup after ordinary extraction failures improve data handling.
+- **Corrections to downstream analysis.** The coefficient of variation calculation and multi-GSE operon annotation have been corrected and covered by regression tests. Additional real-data tests assess interspecies integration, recovery after interruption and computational reproducibility.
 
-The [latest small real-data validation](docs/VALIDATION_CLEAN_RESUME_REPRO.md) compared two runs with **4 GSEs, 2 species and 22 samples**: all 246 retained genes had identical numerical results. RNA reads were subsampled, references were local and operons were disabled. These tests do not establish overall speedup or biological equivalence to the original Docker release; see the [performance evidence](docs/PERFORMANCE.md) and [operon validation](docs/VALIDATION_OPERONS_CV_DISK.md).
+**Validation scope.** In the [latest real-data reproducibility test](docs/VALIDATION_CLEAN_RESUME_REPRO.md), two executions comprising **4 GSEs, 2 species and 22 samples** produced identical numerical results for all **246 retained genes**. This test used subsampled RNA-Seq reads and local reference genomes, with operon detection disabled. It establishes reproducibility for the tested configuration, but does not demonstrate an overall performance gain or biological equivalence relative to the legacy implementation. Separate [performance measurements](docs/PERFORMANCE.md) and [operon validation results](docs/VALIDATION_OPERONS_CV_DISK.md) document their respective experimental conditions and limitations.
 
 ## Run with Nextflow
 
